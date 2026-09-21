@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kênh Lên Tiếng - SEHC SpeakUp</title>
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts & FontAwesome for beautiful icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0033A0; /* Samsung Classic Blue */
+            --primary-light: #E8EFFF;
+            --primary-dark: #002270;
+            --accent-color: #0A84FF; /* Electric Samsung Accent */
+            --success-color: #1A7F37; /* Clean Corporate Green */
+            --success-light: #DFF2E3;
+            --warning-color: #B25E00; /* Warm Amber */
+            --warning-light: #FFF1E0;
+            --error-color: #D32F2F; /* Soft Red */
+            --error-light: #FCE8E6;
+            --bg-color: #F3F5FA; /* Clean light grey-blue background */
+            --card-bg: #FFFFFF;
+            --text-main: #1F2024;
+            --text-secondary: #4A4D54;
+            --text-muted: #7A808C;
+            --border-color: #E2E5EC;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 24px rgba(0, 35, 120, 0.06);
+            --shadow-lg: 0 16px 48px rgba(0, 35, 120, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-family: 'Lexend', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Responsive Container */
+        .app-container {
+            width: 100%;
+            max-width: 600px; /* Perfectly sized for mobile-first layout, beautiful on desktop too */
+            background-color: var(--card-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Navigation Header */
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .samsung-logo {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            color: var(--primary-color);
+            text-transform: uppercase;
+        }
+
+        .channel-badge {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Demo Mode Warning */
+        .demo-banner {
+            background: linear-gradient(135deg, #FFF9E6, #FFF1C5);
+            color: var(--warning-color);
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            border-bottom: 1px solid #FFE29A;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-banner svg {
+            flex-shrink: 0;
+            fill: var(--warning-color);
+        }
+
+        /* Main Content wrapper */
+        main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 90px; /* spacing for floating bottom bar or navigation */
+        }
+
+        /* View State Management */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Helper Typography & Text */
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            line-height: 1.25;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        p.subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        /* UI Cards */
+        .menu-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: var(--transition);
+        }
+
+        .menu-card:hover, .menu-card:active {
+            border-color: var(--accent-color);
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .menu-card-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .menu-card:hover .menu-card-icon, .menu-card:active .menu-card-icon {
+            background-color: var(--primary-color);
+        }
+
+        .menu-card:hover .menu-card-icon svg, .menu-card:active .menu-card-icon svg {
+            fill: #FFFFFF;
+        }
+
+        .menu-card-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .menu-card-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Intro Section Header */
+        .welcome-hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: var(--radius-md);
+            padding: 24px 20px;
+            color: #FFFFFF;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-hero::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            top: -40px;
+            right: -40px;
+        }
+
+        .welcome-hero h1 {
+            color: #FFFFFF;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .welcome-hero p {
+            font-size: 13px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        /* Forms Layout & Inputs */
+        .form-section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary-color);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group.required label::after {
+            content: ' *';
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="datetime-local"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            font-family: var(--font-family);
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .input-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* Specific input styles */
+        .pincode-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pincode-input-container input {
+            letter-spacing: 8px;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .toggle-pwd-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* File Upload styling */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: var(--bg-color);
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent-color);
+            background-color: var(--primary-light);
+        }
+
+        .upload-zone-icon {
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .upload-zone p {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .upload-zone span {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 4px;
+        }
+
+        .file-list {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .file-item {
+            background-color: var(--bg-color);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .file-item-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            width: 80%;
+        }
+
+        .file-item-name {
+            font-weight: 500;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-item-size {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .file-remove-btn {
+            background: none;
+            border: none;
+            color: var(--error-color);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 4px;
+        }
+
+        /* Buttons & Actions */
+        .btn-group {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 20px;
+            font-family: var(--font-family);
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover, .btn-primary:active {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1.5px solid var(--border-color);
+        }
+
+        .btn-secondary:hover, .btn-secondary:active {
+            background-color: var(--bg-color);
+            border-color: var(--text-muted);
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+            padding: 4px 0;
+        }
+
+        /* Success screen styling */
+        .success-screen {
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background-color: var(--success-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+        }
+
+        .success-icon svg {
+            fill: var(--success-color);
+        }
+
+        .success-screen h2 {
+            font-size: 22px;
+            color: var(--success-color);
+            margin-bottom: 12px;
+        }
+
+        .success-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            text-align: justify;
+        }
+
+        .pincode-card {
+            background-color: var(--primary-light);
+            border: 1px dashed var(--accent-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .pincode-card-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+        }
+
+        .pincode-card-code {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: var(--primary-color);
+        }
+
+        /* Results & Status Lookup */
+        .search-results-section {
+            margin-top: 24px;
+        }
+
+        .result-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .result-item:hover, .result-item:active {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+
+        .result-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .result-date {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .badge-new {
+            background-color: #E2E5EC;
+            color: var(--text-secondary);
+        }
+
+        .badge-processing {
+            background-color: var(--warning-light);
+            color: var(--warning-color);
+        }
+
+        .badge-resolved {
+            background-color: var(--success-light);
+            color: var(--success-color);
+        }
+
+        .result-summary {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .result-footer {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Detail Grievance View */
+        .detail-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px 16px;
+            background-color: var(--card-bg);
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            margin-bottom: 14px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .detail-attachments-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .attachment-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            border: 1px solid rgba(0, 51, 160, 0.1);
+        }
+
+        .attachment-link:hover {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        /* Timeline / Stepper */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 24px 10px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            right: 20px;
+            height: 3px;
+            background-color: var(--border-color);
+            z-index: 1;
+        }
+
+        .timeline-progress {
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            height: 3px;
+            background-color: var(--accent-color);
+            z-index: 1;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .timeline-step {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+
+        .timeline-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .timeline-step.active .timeline-dot {
+            border-color: var(--accent-color);
+            background-color: var(--accent-color);
+            color: #FFFFFF;
+        }
+
+        .timeline-step.completed .timeline-dot {
+            border-color: var(--success-color);
+            background-color: var(--success-color);
+            color: #FFFFFF;
+        }
+
+        .timeline-label {
+            margin-top: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .timeline-step.active .timeline-label {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .timeline-step.completed .timeline-label {
+            color: var(--success-color);
+        }
+
+        /* ER Response Section */
+        .response-card {
+            background: linear-gradient(135deg, #F0F6FF, #E4EEFF);
+            border: 1px solid #C0D6FF;
+            border-radius: var(--radius-md);
+            padding: 18px;
+            margin-top: 18px;
+        }
+
+        .response-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .response-card-badge {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .response-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .response-card-date {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .response-card-body {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-main);
+            text-align: justify;
+            white-space: pre-line;
+        }
+
+        .response-card-empty {
+            background-color: #FAFAFA;
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 18px;
+        }
+
+        /* Contact Page styling */
+        .contact-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        .contact-card:hover, .contact-card:active {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .contact-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--primary-color);
+        }
+
+        .contact-card:hover .contact-icon {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        .contact-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .contact-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .contact-info span {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* Loading / Processing Indicator Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--primary-light);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Dynamic Custom Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: #323232;
+            color: #FFFFFF;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .toast.toast-error {
+            background-color: var(--error-color);
+        }
+
+        .toast.toast-success {
+            background-color: var(--success-color);
+        }
+
+        .toast.toast-warning {
+            background-color: var(--warning-color);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Bottom Tab Bar for Mobile Navigation Feel */
+        .tab-bar {
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 99;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-family);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            height: 100%;
+            transition: var(--transition);
+            gap: 4px;
+        }
+
+        .tab-item.active {
+            color: var(--primary-color);
+        }
+
+        .tab-item svg {
+            fill: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .tab-item.active svg {
+            fill: var(--primary-color);
+        }
+
+        /* Responsive Fixes */
+        @media (max-width: 600px) {
+            .app-container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header -->
+    <header>
+        <div class="header-brand" onclick="navigateTo('home')">
+            <!-- Simple clean geometric logo -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="24" height="24" rx="6" fill="#0033A0"/>
+                <path d="M7 16H8.5V11.5C8.5 10.67 9.17 10 10 10H14C14.83 10 15.5 10.67 15.5 11.5V16H17V11.5C17 9.84 15.66 8.5 14 8.5H10C8.34 8.5 7 9.84 7 11.5V16Z" fill="white"/>
+                <circle cx="12" cy="6" r="1.5" fill="white"/>
+            </svg>
+            <span class="samsung-logo">SEHC SpeakUp</span>
+        </div>
+        <span class="channel-badge">Grievance Sensitive</span>
+    </header>
+
+    <!-- Demo Banner -->
+    <div id="demo-banner" class="demo-banner" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+        <span>Chế độ Demo (Chưa kết nối Supabase) - Lưu tạm tại máy</span>
+    </div>
+
+    <!-- MAIN VIEWPORT -->
+    <main>
+        
+        <!-- ================= HOME VIEW ================= -->
+        <section id="view-home" class="view-section active">
+            <div class="welcome-hero">
+                <h1>Kênh Lên Tiếng SEHC</h1>
+                <p>Nơi tiếp nhận và xử lý các vấn đề nhạy cảm một cách bảo mật, khách quan và tôn trọng người phản ánh. Hãy để chúng tôi đồng hành bảo vệ môi trường làm việc của bạn.</p>
+            </div>
+
+            <div class="menu-card" onclick="navigateTo('submit')">
+                <div class="menu-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#0033A0">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                </div>
+                <div class="menu-card-info">
+                    <h3>Gửi khiếu nại / Phản ánh</h3>
+                    <p>Chia sẻ bảo mật, hỗ trợ ẩn danh hoàn toàn</p>
+                </div>
+            </div>
+
+            <div class="menu-card" onclick="navigateTo('status')">
+                <div class="menu-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#0033A0">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                </div>
+                <div class="menu-card-info">
+                    <h3>Tra cứu & Xem phản hồi</h3>
+                    <p>Theo dõi tiến trình giải quyết bằng pincode</p>
+                </div>
+            </div>
+
+            <div class="menu-card" onclick="navigateTo('contact')">
+                <div class="menu-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#0033A0">
+                        <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
+                    </svg>
+                </div>
+                <div class="menu-card-info">
+                    <h3>Liên hệ trực tiếp ER</h3>
+                    <p>Số điện thoại nóng và email nội bộ phòng ER</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SUBMIT GRIEVANCE FORM ================= -->
+        <section id="view-submit" class="view-section">
+            <button class="btn-back" onclick="navigateTo('home')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Quay lại Trang chủ
+            </button>
+            
+            <h1>Gửi Phản Ánh / Khiếu Nại</h1>
+            <p class="subtitle">Vui lòng hoàn thành thông tin dưới đây. Mọi thông tin của bạn được bảo mật tuyệt đối.</p>
+
+            <form id="grievanceForm" onsubmit="handleFormSubmit(event)">
+                <!-- Section 1: Access Info -->
+                <div class="form-section-title">1. Bảo mật và Truy cập</div>
+                
+                <div class="form-group required">
+                    <label for="user_pincode">Tạo mã truy cập (6 chữ số)</label>
+                    <div class="pincode-input-container">
+                        <input type="password" id="user_pincode" inputmode="numeric" placeholder="••••••" maxlength="6" required oninput="handlePincodeInput(this)">
+                        <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('user_pincode')">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                        </button>
+                    </div>
+                    <div id="pincode-validation-msg" class="input-hint" style="font-weight: 600; margin-top: 6px; color: var(--text-muted);">Nhập đủ 6 chữ số để hệ thống kiểm tra bảo mật.</div>
+                    <div class="input-hint" style="margin-top: 4px;"><strong>Lưu ý:</strong> Hãy ghi nhớ mã 6 số này. Đây là mã số duy nhất để bạn truy cập lại khiếu nại đã gửi để xem trạng thái xử lý và phản hồi từ ER.</div>
+                </div>
+
+                <!-- Section 2: Reporter Info -->
+                <div class="form-section-title">2. Thông tin người gửi (Không bắt buộc)</div>
+                <div class="input-hint" style="margin-top: -8px; margin-bottom: 12px; font-style: italic;">Bạn có thể để trống các mục này để gửi ẩn danh.</div>
+
+                <div class="form-group">
+                    <label for="reporter_name">Họ và tên</label>
+                    <input type="text" id="reporter_name" placeholder="Họ và tên của bạn...">
+                </div>
+
+                <div class="form-group">
+                    <label for="employee_id">Mã số nhân viên (8 chữ số)</label>
+                    <input type="text" id="employee_id" inputmode="numeric" placeholder="Ví dụ: 01234567" maxlength="8" oninput="validateEmployeeId(this)">
+                    <div class="input-hint">Phải nhập đúng 8 chữ số (nếu điền). Có thể có số '0' ở đầu.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="department">Bộ phận làm việc</label>
+                    <input type="text" id="department" placeholder="Ví dụ: Assembly, CNC, HR...">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number">Số điện thoại</label>
+                    <input type="tel" id="phone_number" inputmode="numeric" placeholder="Ví dụ: 0901234567" oninput="validateNumbersOnly(this)">
+                </div>
+
+                <!-- Section 3: Communication & Incident Details -->
+                <div class="form-section-title">3. Thông tin liên hệ & Sự việc</div>
+
+                <div class="form-group required">
+                    <label for="email">Email nhận phản hồi</label>
+                    <input type="email" id="email" placeholder="abc@abc.com" required>
+                    <div class="input-hint">Có thể nhập email nặc danh để nhận phản hồi và thông báo tự động từ ER mà vẫn giữ kín danh tính thực.</div>
+                </div>
+
+                <div class="form-group required">
+                    <label for="work_area">Khu vực làm việc</label>
+                    <input type="text" id="work_area" placeholder="Tòa nhà, khu vực làm việc của bạn..." required>
+                </div>
+
+                <div class="form-group required">
+                    <label for="grievance_category">Phân loại sự việc</label>
+                    <select id="grievance_category" required>
+                        <option value="" disabled selected>-- Chọn loại khiếu nại --</option>
+                        <option value="Quấy rối hoặc hành vi không phù hợp">Quấy rối hoặc hành vi không phù hợp</option>
+                        <option value="Phân biệt đối xử, đối xử không công bằng">Phân biệt đối xử, đối xử không công bằng</option>
+                        <option value="Trả đũa hoặc lo ngại bị trả đũa">Trả đũa hoặc lo ngại bị trả đũa</option>
+                        <option value="Tham nhũng, hối lộ">Tham nhũng, hối lộ</option>
+                        <option value="Gian lận, làm sai lệch thông tin">Gian lận, làm sai lệch thông tin</option>
+                        <option value="Xung đột lợi ích">Xung đột lợi ích</option>
+                        <option value="Lạm dụng quyền hạn, chức vụ">Lạm dụng quyền hạn, chức vụ</option>
+                        <option value="Đe dọa, hành vi gây mất an toàn">Đe dọa, hành vi gây mất an toàn</option>
+                        <option value="Vi phạm nghiêm trọng quy định hoặc đạo đức">Vi phạm nghiêm trọng quy định hoặc đạo đức</option>
+                        <option value="Vấn đề nghiêm trọng khác">Vấn đề nghiêm trọng khác</option>
+                    </select>
+                </div>
+
+                <div class="form-group required">
+                    <label for="grievance_subject">Tiêu đề phản ánh</label>
+                    <input type="text" id="grievance_subject" placeholder="Tiêu đề tóm tắt sự việc..." required>
+                </div>
+
+                <div class="form-group required">
+                    <label for="grievance_detail">Chi tiết sự việc</label>
+                    <textarea id="grievance_detail" rows="5" placeholder="Hãy chia sẻ theo cách bạn cảm thấy thoải mái nhất về những thông tin bạn biết. Bạn không cần phải viết theo khuôn mẫu cụ thể nào. Bạn có thể kể lại sự việc, điều bạn trực tiếp chứng kiến hoặc điều khiến bạn lo lắng..." required></textarea>
+                </div>
+
+                <div class="form-group required">
+                    <label for="incident_at">Thời gian xảy ra sự việc</label>
+                    <input type="text" id="incident_at" placeholder="Ví dụ: Khoảng 14h ngày 15/9, hoặc thường xuyên trong tháng 8..." required>
+                    <div class="input-hint">Nêu ngày, giờ hoặc khoảng thời gian xảy ra sự việc. Có thể nhập thông tin chi tiết về tần suất, sự việc đã kết thúc hay còn tiếp diễn.</div>
+                </div>
+
+                <div class="form-group required">
+                    <label for="incident_location">Vị trí xảy ra sự việc</label>
+                    <input type="text" id="incident_location" placeholder="Khu vực cụ thể, tòa nhà, xưởng sản xuất..." required>
+                    <div class="input-hint">Nêu rõ vị trí. Nếu bạn biết vị trí đó có nằm trong tầm quét của camera giám sát (CCTV) hay không, vui lòng cho biết.</div>
+                </div>
+
+                <div class="form-group required">
+                    <label for="involved_people">Những người liên quan / chứng kiến</label>
+                    <textarea id="involved_people" rows="3" placeholder="Nếu bạn biết, hãy cung cấp Họ tên, chức vụ, bộ phận hoặc bất kỳ đặc điểm nhận dạng nào để giúp chúng tôi hiểu rõ hơn về sự việc..." required></textarea>
+                </div>
+
+                <div class="form-group required">
+                    <label for="requested_action">Mong muốn / Đề xuất giải quyết</label>
+                    <textarea id="requested_action" rows="3" placeholder="Nguyện vọng hoặc đề xuất giải quyết của bạn cho sự việc này..." required></textarea>
+                </div>
+
+                <!-- Evidence Section -->
+                <div class="form-section-title">4. Tài liệu, bằng chứng kèm theo</div>
+                
+                <div class="form-group required">
+                    <label>Tải file bằng chứng</label>
+                    <div class="upload-zone" id="uploadZone" onclick="triggerFileInput()">
+                        <div class="upload-zone-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--text-muted)">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                            </svg>
+                        </div>
+                        <p>Kéo thả file hoặc nhấn để tải lên</p>
+                        <span>Hỗ trợ hình ảnh, video, âm thanh, tài liệu (Tối đa 10MB/file)</span>
+                        <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
+                    </div>
+                    <div class="file-list" id="fileList"></div>
+                    <div class="input-hint" style="color: var(--error-color);">Vui lòng tải lên các tệp tin liên quan (hình ảnh sự việc, đoạn hội thoại ghi âm, tin nhắn chụp màn hình...) để ER có căn cứ xác minh.</div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary" id="submitFormBtn">Gửi phản ánh an toàn</button>
+                    <button type="button" class="btn btn-secondary" onclick="navigateTo('home')">Hủy bỏ</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ================= SUCCESS SCREEN ================= -->
+        <section id="view-success" class="view-section">
+            <div class="success-screen">
+                <div class="success-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                </div>
+                <h2>Gửi phản ánh thành công!</h2>
+                
+                <div class="pincode-card">
+                    <div class="pincode-card-title">Mã số truy cập của bạn (Mã PIN)</div>
+                    <div class="pincode-card-code" id="successPincodeDisplay">000000</div>
+                    <div class="input-hint" style="color: var(--primary-dark); font-weight: 500; margin-top: 8px;">Vui lòng CHỤP MÀN HÌNH hoặc lưu lại mã PIN này. Hệ thống không cung cấp cách lấy lại mã này vì tính bảo mật danh tính!</div>
+                </div>
+
+                <div class="success-message">
+                    Cảm ơn bạn đã lên tiếng!<br><br>
+                    Chia sẻ một vấn đề nhạy cảm không phải lúc nào cũng dễ dàng. Cảm ơn bạn đã dành thời gian chia sẻ với chúng tôi. Thông tin bạn cung cấp sẽ được tiếp nhận, xem xét và xử lý một cách phù hợp với nguyên tắc bảo mật và tôn trọng người phản ánh. Bạn không cần phải tự mình giải quyết vấn đề này. Hãy để chúng tôi xem xét và hỗ trợ trong phạm vi phù hợp.
+                </div>
+
+                <button class="btn btn-primary" onclick="navigateTo('home')">Quay lại Trang chủ</button>
+            </div>
+        </section>
+
+        <!-- ================= LOOKUP STATUS & RESPONSE ================= -->
+        <section id="view-status" class="view-section">
+            <button class="btn-back" onclick="navigateTo('home')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Quay lại Trang chủ
+            </button>
+            
+            <h1>Xem Trạng Thái & Phản Hồi</h1>
+            <p class="subtitle">Nhập lại mã PIN 6 chữ số bạn đã thiết lập khi gửi khiếu nại để xem phản hồi bảo mật từ bộ phận ER.</p>
+
+            <div class="form-group">
+                <label for="lookup_pincode">Mã truy cập 6 chữ số (Mã PIN)</label>
+                <div class="pincode-input-container">
+                    <input type="password" id="lookup_pincode" inputmode="numeric" placeholder="••••••" maxlength="6" oninput="validatePincode(this)">
+                    <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('lookup_pincode')">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="performGrievanceLookup()">Tìm kiếm đơn phản ánh</button>
+
+            <!-- Search Results Display -->
+            <div id="searchResultsSection" class="search-results-section" style="display: none;">
+                <h2 id="resultsCountTitle">Đơn phản ánh của bạn</h2>
+                <div id="resultsList"></div>
+            </div>
+        </section>
+
+        <!-- ================= DETAIL VIEW ================= -->
+        <section id="view-detail" class="view-section">
+            <button class="btn-back" onclick="navigateTo('status')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Quay lại Danh sách
+            </button>
+
+            <h1 id="detailSubject">Chi tiết phản ánh</h1>
+            <p class="subtitle" style="margin-bottom: 12px;">Thông tin chi tiết về tiến trình tiếp nhận và giải quyết phản ánh.</p>
+
+            <!-- Status Timeline -->
+            <div class="timeline">
+                <div class="timeline-progress" id="detailTimelineProgress"></div>
+                <div class="timeline-step" id="step-new">
+                    <div class="timeline-dot">1</div>
+                    <div class="timeline-label">Đã Tiếp Nhận</div>
+                </div>
+                <div class="timeline-step" id="step-processing">
+                    <div class="timeline-dot">2</div>
+                    <div class="timeline-label">Đang Xác Minh</div>
+                </div>
+                <div class="timeline-step" id="step-resolved">
+                    <div class="timeline-dot">3</div>
+                    <div class="timeline-label font-bold">Đã Phản Hồi</div>
+                </div>
+            </div>
+
+            <!-- ER Response Area -->
+            <div id="detailErResponseArea"></div>
+
+            <!-- Detailed Data Fields -->
+            <div class="detail-card">
+                <div class="detail-row">
+                    <div class="detail-label">Phân Loại Sự Việc</div>
+                    <div class="detail-value" id="detailCategory"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Mã số hồ sơ</div>
+                    <div class="detail-value" id="detailId" style="font-family: monospace; font-size: 12px;"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Thời gian gửi</div>
+                    <div class="detail-value" id="detailSubmittedAt"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Thời gian xảy ra sự việc</div>
+                    <div class="detail-value" id="detailIncidentAt"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Vị trí xảy ra</div>
+                    <div class="detail-value" id="detailIncidentLocation"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Khu vực làm việc của bạn</div>
+                    <div class="detail-value" id="detailWorkArea"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Những người liên quan</div>
+                    <div class="detail-value" style="white-space: pre-line;" id="detailInvolvedPeople"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Chi tiết sự việc</div>
+                    <div class="detail-value" style="white-space: pre-line;" id="detailDetail"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Đề xuất giải quyết</div>
+                    <div class="detail-value" style="white-space: pre-line;" id="detailRequestedAction"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Thông tin liên hệ đã điền</div>
+                    <div class="detail-value" id="detailReporterContact"></div>
+                </div>
+                <div class="detail-row" id="detailAttachmentsRow">
+                    <div class="detail-label">Bằng chứng gửi kèm</div>
+                    <div class="detail-attachments-list" id="detailAttachments"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CONTACT DIRECT ER ================= -->
+        <section id="view-contact" class="view-section">
+            <h1>Phòng Quan Hệ Lao Động (ER)</h1>
+            <p class="subtitle">Nếu bạn cần tư vấn khẩn cấp hoặc muốn thảo luận trực tiếp, vui lòng kết nối qua các cổng thông tin chính thức dưới đây.</p>
+
+            <a href="mailto:hotlinesehc@samsung.com" class="contact-card">
+                <div class="contact-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                </div>
+                <div class="contact-info">
+                    <h3>Hotline Email</h3>
+                    <p>Bộ phận hỗ trợ kỹ thuật và giải quyết khiếu nại</p>
+                    <span>hotlinesehc@samsung.com</span>
+                </div>
+            </a>
+
+            <a href="tel:07-0290-0290" class="contact-card">
+                <div class="contact-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
+                    </svg>
+                </div>
+                <div class="contact-info">
+                    <h3>Hotline Điện thoại</h3>
+                    <p>Giờ hành chính: Thứ Hai - Thứ Sáu (8:00 - 17:00)</p>
+                    <span>07-0290-0290</span>
+                </div>
+            </a>
+            
+            <div class="response-card" style="margin-top: 30px;">
+                <div class="response-card-title">Cam kết từ Bộ phận ER</div>
+                <div class="response-card-body" style="font-size: 12px; margin-top: 8px;">
+                    Chúng tôi chịu trách nhiệm tiếp nhận thông tin từ bạn một cách khách quan nhất. Thông tin phản ánh sẽ chỉ được tiếp cận bởi những cán bộ chuyên trách được ủy quyền, tuyệt đối giữ bí mật nguồn tin và bảo vệ người phản ánh trước mọi nguy cơ bị trả đũa.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- LOADING INDICATOR OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loadingText" class="loading-text">Đang gửi hồ sơ...</div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- FLOATING TAB NAVIGATION BAR -->
+    <nav class="tab-bar">
+        <button class="tab-item active" id="tab-home" onclick="navigateTo('home')">
+            <svg width="22" height="22" viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span>Trang chủ</span>
+        </button>
+        <button class="tab-item" id="tab-submit" onclick="navigateTo('submit')">
+            <svg width="22" height="22" viewBox="0 0 24 24">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            <span>Gửi phản ánh</span>
+        </button>
+        <button class="tab-item" id="tab-status" onclick="navigateTo('status')">
+            <svg width="22" height="22" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <span>Tra cứu</span>
+        </button>
+        <button class="tab-item" id="tab-contact" onclick="navigateTo('contact')">
+            <svg width="22" height="22" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+            <span>Liên hệ ER</span>
+        </button>
+    </nav>
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    // --- SUPABASE CONFIGURATION ---
+    // Thay thế thông tin kết nối Supabase của bạn tại đây:
+    const supabaseUrl = 'https://wvfolaoukphocflrdqxj.supabase.co'; // Ví dụ: 'https://lbyitgrjdfgfgfgf.supabase.co'
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2Zm9sYW91a3Bob2NmbHJkcXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MDg0OTQsImV4cCI6MjEwNTI4NDQ5NH0.aBMGvrAckYDbM2RpyksdN5sWjav-PhYdS2xichfnpNU'; // Ví dụ: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVC...'
+
+    // Biến toàn cục quản lý file đính kèm đang chọn
+    let selectedFiles = [];
+    let supabaseClient = null;
+    let isDemoMode = true;
+
+    // Khởi tạo ứng dụng
+    document.addEventListener('DOMContentLoaded', () => {
+        // Kiểm tra xem đã điền cấu hình Supabase chưa
+        isDemoMode = !supabaseUrl || 
+                     supabaseUrl.startsWith('YOUR_SUPABASE') || 
+                     !supabaseAnonKey || 
+                     supabaseAnonKey.startsWith('YOUR_SUPABASE');
+
+        const demoBanner = document.getElementById('demo-banner');
+        if (isDemoMode) {
+            demoBanner.style.display = 'flex';
+            console.log('App running in DEMO mode via LocalStorage.');
+            initializeDemoData();
+        } else {
+            demoBanner.style.display = 'none';
+            try {
+                // Khởi tạo Supabase SDK
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                console.log('Supabase successfully initialized.');
+            } catch (err) {
+                console.error('Error initializing Supabase client:', err);
+                isDemoMode = true;
+                demoBanner.style.display = 'flex';
+                demoBanner.innerHTML = '<span>⚠️ Lỗi kết nối Supabase SDK. Chuyển sang chế độ DEMO!</span>';
+                initializeDemoData();
+            }
+        }
+
+        // Setup Drag and Drop events cho khu vực upload
+        setupDragAndDrop();
+    });
+
+    // --- NAVIGATION MANAGEMENT ---
+    function navigateTo(viewId) {
+        // 1. Ẩn tất cả các view
+        const sections = document.querySelectorAll('.view-section');
+        sections.forEach(sec => sec.classList.remove('active'));
+
+        // 2. Hiện view được chọn
+        const targetSection = document.getElementById(`view-submit`);
+        const activeSection = document.getElementById(`view-${viewId}`);
+        if (activeSection) {
+            activeSection.classList.add('active');
+        }
+
+        // 3. Cập nhật trạng thái active trên Bottom Tab Bar
+        const tabs = document.querySelectorAll('.tab-item');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        const activeTab = document.getElementById(`tab-${viewId}`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+
+        // Cuộn đầu trang mượt mà
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- FORM VALIDATIONS ---
+    function validatePincode(input) {
+        // Chỉ nhận số
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    async function handlePincodeInput(input) {
+        // Chỉ nhận số
+        input.value = input.value.replace(/[^0-9]/g, '');
+        const pincode = input.value;
+        const msgElement = document.getElementById('pincode-validation-msg');
+        const submitBtn = document.getElementById('submitFormBtn');
+
+        if (!msgElement) return;
+
+        // Nếu chưa gõ đủ 6 số
+        if (pincode.length < 6) {
+            msgElement.style.color = 'var(--text-muted)';
+            msgElement.innerHTML = 'Nhập đủ 6 chữ số để hệ thống kiểm tra bảo mật.';
+            input.style.borderColor = 'var(--border-color)';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            return;
+        }
+
+        // Đã gõ đủ 6 số, bắt đầu kiểm tra trùng bảo mật
+        msgElement.style.color = 'var(--accent-color)';
+        msgElement.innerHTML = '⏳ Đang kiểm tra tính khả dụng của mã PIN...';
+        input.style.borderColor = 'var(--accent-color)';
+
+        let exists = false;
+        if (isDemoMode) {
+            const mockGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+            exists = mockGrievances.some(g => g.user_pincode.toString() === pincode);
+        } else {
+            try {
+                const { data, error } = await supabaseClient
+                    .rpc('check_pincode_exists', { pincode_input: pincode });
+                if (error) throw error;
+                exists = data;
+            } catch (err) {
+                console.error('Error checking pincode availability:', err);
+                exists = false; // Lỗi mạng thì bỏ qua không chặn người dùng
+            }
+        }
+
+        if (exists) {
+            msgElement.style.color = 'var(--error-color)';
+            msgElement.innerHTML = '❌ Mã PIN này đã được sử dụng. Vui lòng chọn 6 chữ số khác để bảo mật khiếu nại!';
+            input.style.borderColor = 'var(--error-color)';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            msgElement.style.color = 'var(--success-color)';
+            msgElement.innerHTML = '✅ Mã PIN hợp lệ và an toàn (chưa có ai sử dụng).';
+            input.style.borderColor = 'var(--success-color)';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
+
+    function validateEmployeeId(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    function validateNumbersOnly(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    function togglePasswordVisibility(id) {
+        const input = document.getElementById(id);
+        if (input.type === 'password') {
+            input.type = 'text';
+        } else {
+            input.type = 'password';
+        }
+    }
+
+    // --- TOAST NOTIFICATIONS SYSTEM ---
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        
+        let icon = '';
+        if (type === 'success') {
+            icon = '<svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+        } else if (type === 'error') {
+            icon = '<svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
+        } else {
+            icon = '<svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+        }
+
+        toast.innerHTML = `${icon}<span>${message}</span>`;
+        container.appendChild(toast);
+
+        // Slide out after 3.7 seconds and remove
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3700);
+    }
+
+    // --- FILE UPLOADER LOGIC ---
+    function triggerFileInput() {
+        document.getElementById('fileInput').click();
+    }
+
+    function setupDragAndDrop() {
+        const zone = document.getElementById('uploadZone');
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            zone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            zone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+            }, false);
+        });
+
+        zone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }, false);
+    }
+
+    function handleFileSelect(e) {
+        const files = e.target.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.size > maxSize) {
+                showToast(`File ${file.name} quá lớn (Tối đa 10MB)`, 'error');
+                continue;
+            }
+            
+            // Check trùng file
+            if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                continue;
+            }
+
+            selectedFiles.push(file);
+        }
+        renderFileList();
+    }
+
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        renderFileList();
+    }
+
+    function renderFileList() {
+        const fileListContainer = document.getElementById('fileList');
+        fileListContainer.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="file-item-info">
+                    <svg width="16" height="16" fill="var(--text-muted)" viewBox="0 0 24 24" style="flex-shrink:0;">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                    </svg>
+                    <span class="file-item-name">${escapeHtml(file.name)}</span>
+                    <span class="file-item-size">(${sizeInMB} MB)</span>
+                </div>
+                <button type="button" class="file-remove-btn" onclick="removeFile(${index})">&times;</button>
+            `;
+            fileListContainer.appendChild(fileItem);
+        });
+    }
+
+    // --- FORM SUBMISSION FLOW ---
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+
+        // 1. Validate Form input
+        const pincode = document.getElementById('user_pincode').value;
+        const employeeId = document.getElementById('employee_id').value;
+        const email = document.getElementById('email').value;
+
+        if (pincode.length !== 6) {
+            showToast('Mã truy cập PIN phải gồm đúng 6 chữ số!', 'error');
+            return;
+        }
+
+        if (employeeId && employeeId.length !== 8) {
+            showToast('Mã số nhân viên phải gồm đúng 8 chữ số!', 'error');
+            return;
+        }
+
+        if (selectedFiles.length === 0) {
+            showToast('Vui lòng tải lên ít nhất một file bằng chứng!', 'error');
+            return;
+        }
+
+        // Show loading overlay
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        loadingOverlay.classList.add('active');
+
+        // Khởi tạo data payload
+        const incidentAtVal = document.getElementById('incident_at').value.trim();
+        const grievanceId = generateUUID(); // Tạo mã hồ sơ ngẫu nhiên ngay tại Client để bảo mật và tránh lỗi RLS SELECT
+
+        const grievanceData = {
+            grievance_id: grievanceId,
+            user_pincode: pincode, // Giữ nguyên dạng TEXT để lưu đúng số 0 ở đầu (ví dụ: '000000')
+            reporter_name: document.getElementById('reporter_name').value.trim() || null,
+            employee_id: employeeId ? parseInt(employeeId) : null,
+            department: document.getElementById('department').value.trim() || null,
+            phone_number: document.getElementById('phone_number').value.trim() ? parseInt(document.getElementById('phone_number').value) : null,
+            email: email.trim(),
+            work_area: document.getElementById('work_area').value.trim(),
+            grievance_category: document.getElementById('grievance_category').value,
+            grievance_subject: document.getElementById('grievance_subject').value.trim(),
+            grievance_detail: document.getElementById('grievance_detail').value.trim(),
+            incident_at: incidentAtVal,
+            incident_location: document.getElementById('incident_location').value.trim(),
+            involved_people: document.getElementById('involved_people').value.trim(),
+            requested_action: document.getElementById('requested_action').value.trim(),
+            status: 'new',
+            er_response: ''
+        };
+
+        if (isDemoMode) {
+            // --- DEMO MODE WORKFLOW (LOCAL STORAGE) ---
+            try {
+                await delay(1500); // Simulate network latency
+                loadingText.innerText = 'Đang tải lên các tệp đính kèm (mô phỏng)...';
+                await delay(1000);
+
+                const mockGrievanceId = generateUUID();
+                const nowStr = new Date().toISOString();
+                
+                // Save Mock Grievance
+                const mockGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+                const newGrievance = {
+                    ...grievanceData,
+                    grievance_id: mockGrievanceId,
+                    submitted_at: nowStr,
+                    created_at: nowStr,
+                    updated_at: nowStr
+                };
+                mockGrievances.push(newGrievance);
+                localStorage.setItem('mock_grievances', JSON.stringify(mockGrievances));
+
+                // Save Mock Attachments
+                const mockAttachments = JSON.parse(localStorage.getItem('mock_attachments') || '[]');
+                selectedFiles.forEach((file) => {
+                    mockAttachments.push({
+                        attachment_id: generateUUID(),
+                        grievance_id: mockGrievanceId,
+                        storage_path: `mock-bucket/${mockGrievanceId}/${file.name}`,
+                        original_file_name: file.name,
+                        mime_type: file.type || 'application/octet-stream',
+                        file_size_bytes: file.size,
+                        uploaded_at: nowStr
+                    });
+                });
+                localStorage.setItem('mock_attachments', JSON.stringify(mockAttachments));
+
+                // Reset Form
+                resetForm();
+
+                // Show Success Screen
+                document.getElementById('successPincodeDisplay').innerText = pincode;
+                loadingOverlay.classList.remove('active');
+                navigateTo('success');
+                showToast('Hồ sơ gửi thành công (Chế độ Demo)!', 'success');
+
+            } catch (err) {
+                loadingOverlay.classList.remove('active');
+                showToast('Có lỗi xảy ra khi lưu ở chế độ Demo!', 'error');
+            }
+        } else {
+            // --- LIVE SUPABASE WORKFLOW ---
+            try {
+                loadingText.innerText = 'Đang lưu nội dung khiếu nại...';
+                
+                // 1. Insert grievance table 1 (Không cần .select() nữa, tránh lỗi RLS SELECT)
+                const { error: insertError } = await supabaseClient
+                    .from('grievances')
+                    .insert([grievanceData]);
+
+                if (insertError) throw insertError;
+
+                // 2. Loop and upload files to storage + save attachment info
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    loadingText.innerText = `Đang tải tệp tin ${i + 1}/${selectedFiles.length}: ${file.name}...`;
+
+                    // Tạo unique path: grievance_id/timestamp_filename
+                    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                    const storagePath = `${grievanceId}/${Date.now()}_${cleanFileName}`;
+
+                    // Upload lên Supabase Storage bucket 'grievance-attachments'
+                    const { data: uploadData, error: uploadError } = await supabaseClient
+                        .storage
+                        .from('grievance-attachments')
+                        .upload(storagePath, file);
+
+                    if (uploadError) throw uploadError;
+
+                    // Thêm record vào bảng attachments (Table 2)
+                    const { error: attachError } = await supabaseClient
+                        .from('attachments')
+                        .insert([{
+                            grievance_id: grievanceId,
+                            storage_path: storagePath,
+                            original_file_name: file.name,
+                            mime_type: file.type || 'application/octet-stream',
+                            file_size_bytes: file.size
+                        }]);
+
+                    if (attachError) throw attachError;
+                }
+
+                // Thành công: Reset form & Chuyển trang
+                resetForm();
+                document.getElementById('successPincodeDisplay').innerText = pincode;
+                loadingOverlay.classList.remove('active');
+                navigateTo('success');
+                showToast('Đã gửi phản ánh lên hệ thống bảo mật SEHC!', 'success');
+
+            } catch (err) {
+                console.error('Error submitting grievance:', err);
+                loadingOverlay.classList.remove('active');
+                showToast(`Lỗi: ${err.message || 'Không thể gửi phản ánh. Vui lòng kiểm tra kết nối mạng.'}`, 'error');
+            }
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('grievanceForm').reset();
+        selectedFiles = [];
+        renderFileList();
+    }
+
+    // --- LOOKUP & STATUS TRACKER FLOW ---
+    async function performGrievanceLookup() {
+        const pincodeStr = document.getElementById('lookup_pincode').value;
+        if (pincodeStr.length !== 6) {
+            showToast('Mã PIN phải gồm đúng 6 chữ số!', 'error');
+            return;
+        }
+
+        const pincode = pincodeStr; // Giữ nguyên dạng TEXT để truy vấn đúng mã PIN có số 0 ở đầu
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        loadingText.innerText = 'Đang tra cứu cơ sở dữ liệu...';
+        loadingOverlay.classList.add('active');
+
+        if (isDemoMode) {
+            // --- DEMO MODE LOOKUP ---
+            await delay(1200);
+            const mockGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+            const results = mockGrievances.filter(g => g.user_pincode.toString() === pincode.toString());
+            
+            renderSearchResults(results);
+            loadingOverlay.classList.remove('active');
+        } else {
+            // --- LIVE SUPABASE LOOKUP VIA SECURE RPC ---
+            try {
+                // Ta gọi Database RPC function để tăng tính bảo mật, tránh SELECT trực tiếp cả bảng
+                const { data, error } = await supabaseClient
+                    .rpc('get_grievance_by_pincode', { pincode_input: pincode });
+
+                if (error) throw error;
+
+                renderSearchResults(data || []);
+                loadingOverlay.classList.remove('active');
+
+            } catch (err) {
+                console.error('Error looking up grievances:', err);
+                loadingOverlay.classList.remove('active');
+                showToast(`Lỗi tra cứu: ${err.message || 'Không thể truy cập dữ liệu.'}`, 'error');
+            }
+        }
+    }
+
+    function renderSearchResults(results) {
+        const resultsSection = document.getElementById('searchResultsSection');
+        const resultsCountTitle = document.getElementById('resultsCountTitle');
+        const resultsList = document.getElementById('resultsList');
+
+        resultsList.innerHTML = '';
+        resultsSection.style.display = 'block';
+
+        if (results.length === 0) {
+            resultsCountTitle.innerText = 'Không tìm thấy hồ sơ';
+            resultsList.innerHTML = `
+                <div class="response-card-empty" style="margin-top:0;">
+                    Không có đơn phản ánh nào khớp với mã PIN này. Vui lòng kiểm tra lại mã hoặc tạo phản ánh mới.
+                </div>
+            `;
+            return;
+        }
+
+        resultsCountTitle.innerText = `Tìm thấy ${results.length} đơn phản ánh`;
+
+        results.forEach(grievance => {
+            const dateStr = formatDate(grievance.submitted_at);
+            const badgeClass = getStatusBadgeClass(grievance.status);
+            const badgeText = getStatusBadgeText(grievance.status);
+
+            const item = document.createElement('div');
+            item.className = 'result-item';
+            item.onclick = () => openGrievanceDetail(grievance);
+            item.innerHTML = `
+                <div class="result-header">
+                    <span class="result-title">${escapeHtml(grievance.grievance_subject)}</span>
+                    <span class="result-date">${dateStr}</span>
+                </div>
+                <div>
+                    <span class="badge ${badgeClass}">${badgeText}</span>
+                </div>
+                <div class="result-summary">${escapeHtml(grievance.grievance_detail)}</div>
+                <div class="result-footer">
+                    <span>Loại: ${escapeHtml(grievance.grievance_category)}</span>
+                    <span style="color:var(--accent-color); font-weight:600;">Xem chi tiết &rarr;</span>
+                </div>
+            `;
+            resultsList.appendChild(item);
+        });
+
+        // Tự động scroll nhẹ xuống danh sách kết quả
+        setTimeout(() => {
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+
+    // --- DETAILED VIEW FLOW ---
+    async function openGrievanceDetail(grievance) {
+        // Cập nhật các trường thông tin cơ bản
+        document.getElementById('detailSubject').innerText = grievance.grievance_subject;
+        document.getElementById('detailCategory').innerText = grievance.grievance_category;
+        document.getElementById('detailId').innerText = grievance.grievance_id;
+        document.getElementById('detailSubmittedAt').innerText = formatDate(grievance.submitted_at);
+        document.getElementById('detailIncidentAt').innerText = grievance.incident_at;
+        document.getElementById('detailIncidentLocation').innerText = grievance.incident_location;
+        document.getElementById('detailWorkArea').innerText = grievance.work_area;
+        document.getElementById('detailInvolvedPeople').innerText = grievance.involved_people;
+        document.getElementById('detailDetail').innerText = grievance.grievance_detail;
+        document.getElementById('detailRequestedAction').innerText = grievance.requested_action;
+
+        // Xử lý thông tin liên hệ tùy chọn
+        let contactInfo = 'Ẩn danh hoàn toàn';
+        if (grievance.reporter_name || grievance.employee_id || grievance.department || grievance.phone_number) {
+            contactInfo = `
+                Họ tên: ${escapeHtml(grievance.reporter_name || '(Trống)')} | 
+                MSNV: ${escapeHtml(grievance.employee_id || '(Trống)')} | 
+                Bộ phận: ${escapeHtml(grievance.department || '(Trống)')} | 
+                SĐT: ${escapeHtml(grievance.phone_number || '(Trống)')}
+            `;
+        }
+        contactInfo += `<br>Email liên hệ: ${escapeHtml(grievance.email)}`;
+        document.getElementById('detailReporterContact').innerHTML = contactInfo;
+
+        // Cập nhật Timeline Stepper
+        updateTimelineProgress(grievance.status);
+
+        // Hiển thị phản hồi từ Ban tổ chức ER
+        const responseArea = document.getElementById('detailErResponseArea');
+        responseArea.innerHTML = '';
+
+        if (grievance.er_response && grievance.er_response.trim() !== '') {
+            const dateResponse = grievance.first_response_at ? formatDate(grievance.first_response_at) : formatDate(grievance.updated_at);
+            responseArea.innerHTML = `
+                <div class="response-card">
+                    <div class="response-card-header">
+                        <span class="response-card-badge">Bộ phận ER phản hồi</span>
+                        <span class="response-card-title">Phản hồi chính thức</span>
+                        <span class="response-card-date">${dateResponse}</span>
+                    </div>
+                    <div class="response-card-body">${escapeHtml(grievance.er_response)}</div>
+                </div>
+            `;
+        } else {
+            responseArea.innerHTML = `
+                <div class="response-card-empty">
+                    🕒 Đơn phản ánh đang trong quá trình tiếp nhận và tiến hành xác minh. Phản hồi chính thức từ Ban Tổ Chức (ER) sẽ hiển thị ngay tại đây khi có cập nhật mới. Vui lòng quay lại kiểm tra định kỳ bằng mã PIN này.
+                </div>
+            `;
+        }
+
+        // Tải danh sách file đính kèm
+        const attachmentsContainer = document.getElementById('detailAttachments');
+        attachmentsContainer.innerHTML = '';
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.add('active');
+        document.getElementById('loadingText').innerText = 'Đang tải thông tin tệp đính kèm...';
+
+        if (isDemoMode) {
+            // Demo mode attachments fetch
+            await delay(600);
+            const mockAttachments = JSON.parse(localStorage.getItem('mock_attachments') || '[]');
+            const grievanceAttachments = mockAttachments.filter(a => a.grievance_id === grievance.grievance_id);
+            renderAttachments(grievanceAttachments);
+            loadingOverlay.classList.remove('active');
+        } else {
+            // Live Supabase attachments fetch
+            try {
+                const { data, error } = await supabaseClient
+                    .from('attachments')
+                    .select('*')
+                    .eq('grievance_id', grievance.grievance_id);
+
+                if (error) throw error;
+                
+                // Trực tiếp render
+                renderAttachments(data || []);
+                loadingOverlay.classList.remove('active');
+            } catch (err) {
+                console.error('Error fetching attachments:', err);
+                loadingOverlay.classList.remove('active');
+                showToast('Không thể tải các tệp đính kèm', 'error');
+            }
+        }
+
+        navigateTo('detail');
+    }
+
+    function renderAttachments(attachments) {
+        const container = document.getElementById('detailAttachments');
+        const row = document.getElementById('detailAttachmentsRow');
+        container.innerHTML = '';
+
+        if (attachments.length === 0) {
+            row.style.display = 'none';
+            return;
+        }
+
+        row.style.display = 'block';
+
+        attachments.forEach(att => {
+            let fileUrl = '#';
+            if (!isDemoMode && supabaseClient) {
+                // Lấy URL công khai từ Supabase Storage cho bucket 'grievance-attachments'
+                const { data } = supabaseClient.storage
+                    .from('grievance-attachments')
+                    .getPublicUrl(att.storage_path);
+                fileUrl = data.publicUrl;
+            } else {
+                // Demo url
+                fileUrl = 'javascript:void(0);';
+            }
+
+            const sizeInMB = (att.file_size_bytes / (1024 * 1024)).toFixed(2);
+            const link = document.createElement('a');
+            link.className = 'attachment-link';
+            link.href = fileUrl;
+            link.target = isDemoMode ? '_self' : '_blank';
+            if (isDemoMode) {
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    showToast(`Demo: Bạn đang click vào file "${att.original_file_name}" (${sizeInMB} MB)`, 'info');
+                };
+            }
+            link.innerHTML = `
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+                </svg>
+                <span>${escapeHtml(att.original_file_name)}</span>
+            `;
+            container.appendChild(link);
+        });
+    }
+
+    function updateTimelineProgress(status) {
+        const stepNew = document.getElementById('step-new');
+        const stepProcessing = document.getElementById('step-processing');
+        const stepResolved = document.getElementById('step-resolved');
+        const progress = document.getElementById('detailTimelineProgress');
+
+        // Reset
+        stepNew.className = 'timeline-step';
+        stepProcessing.className = 'timeline-step';
+        stepResolved.className = 'timeline-step';
+        progress.style.width = '0%';
+
+        if (status === 'new') {
+            stepNew.classList.add('active');
+            progress.style.width = '0%';
+        } else if (status === 'processing') {
+            stepNew.classList.add('completed');
+            stepProcessing.classList.add('active');
+            progress.style.width = '50%';
+        } else if (status === 'resolved') {
+            stepNew.classList.add('completed');
+            stepProcessing.classList.add('completed');
+            stepResolved.classList.add('completed');
+            progress.style.width = '100%';
+        }
+    }
+
+    // --- HELPER FUNCTIONS ---
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    function getStatusBadgeClass(status) {
+        switch (status) {
+            case 'new': return 'badge-new';
+            case 'processing': return 'badge-processing';
+            case 'resolved': return 'badge-resolved';
+            default: return 'badge-new';
+        }
+    }
+
+    function getStatusBadgeText(status) {
+        switch (status) {
+            case 'new': return 'Mới tiếp nhận';
+            case 'processing': return 'Đang xử lý';
+            case 'resolved': return 'Đã phản hồi';
+            default: return status;
+        }
+    }
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // --- INITIALIZE REALISTIC DEMO DATA (IN LOCAL STORAGE) ---
+    function initializeDemoData() {
+        if (!localStorage.getItem('mock_grievances')) {
+            const now = new Date();
+            const subAt1 = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(); // 5 days ago
+            const incAt1 = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString(); // 6 days ago
+            const firstRespAt = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(); // 3 days ago
+            const resAt1 = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(); // 1 day ago
+
+            const demoGrievanceId = 'd86cb53e-51c3-4d0d-9b54-f725357a70a8';
+
+            const mockGrievances = [
+                {
+                    grievance_id: demoGrievanceId,
+                    user_pincode: 123456,
+                    reporter_name: '',
+                    employee_id: null,
+                    department: '',
+                    phone_number: null,
+                    email: 'nhanvien.giau.ten@gmail.com',
+                    work_area: 'Tòa nhà H1, Xưởng Assembly 2',
+                    grievance_category: 'Phân biệt đối xử, đối xử không công bằng',
+                    grievance_subject: 'Yêu cầu hỗ trợ về quy trình chấm công tại tổ sản xuất',
+                    grievance_detail: 'Tôi nhận thấy quy trình tính toán tăng ca (overtime) của bộ phận sản xuất tổ chúng tôi trong tháng 8 có sự không minh bạch và phân biệt đối xử. Một số đồng nghiệp thân quen với Quản lý ca được ưu tiên chấm bù nhiều giờ hơn, trong khi chúng tôi làm việc thực tế cực nhọc lại không được ghi nhận đủ số giờ làm. Khi tôi có ý kiến thì Quản lý ca né tránh giải thích và tỏ thái độ lạnh nhạt.',
+                    incident_at: 'Thường xuyên trong tháng 8/2026 (vào các ca làm việc tối từ 18:00 - 22:00)',
+                    incident_location: 'Văn phòng Tổ trưởng sản xuất và Bảng tin chấm công xưởng Assembly 2',
+                    involved_people: 'Quản lý ca Nguyễn Văn A và một số nhân viên tổ ca B',
+                    requested_action: 'Kính mong Bộ phận Quan hệ Lao động (ER) làm việc khách quan, kiểm tra lại toàn bộ dữ liệu quẹt thẻ ra vào cổng của xưởng đối chiếu với bảng giờ công đã duyệt để trả lại sự công bằng và thu nhập xứng đáng cho nhân viên.',
+                    status: 'resolved',
+                    er_response: `Kính gửi anh/chị phản ánh,\n\nBộ phận Quan hệ Lao động (ER) trân trọng cảm ơn sự dũng cảm và tinh thần lên tiếng của anh/chị giúp ban quản lý hoàn thiện hệ thống.\n\nNgay sau khi tiếp nhận thông tin bảo mật này, đại diện phòng ER đã phối hợp với Trưởng bộ phận Nhân sự tiến hành rà soát đột xuất dữ liệu quẹt thẻ kiểm soát của toàn xưởng Assembly 2 từ ngày 01/8 đến 31/8, đối chiếu chi tiết với bảng công được phê duyệt bởi Quản lý Nguyễn Văn A.\n\nKết quả xác minh như sau:\n1. Phát hiện chênh lệch 18 giờ làm thêm chưa được ghi nhận chính xác cho 05 nhân viên (trong đó có phản ánh của anh/chị).\n2. Quản lý ca Nguyễn Văn A thừa nhận đã có sai sót và thiếu sót trong việc nhập liệu thủ công của ca xoay vòng, không có bằng chứng trục lợi cá nhân nhưng quy trình phê duyệt lỏng lẻo.\n\nHướng khắc phục xử lý:\n1. Bộ phận Nhân sự đã thực hiện thủ tục chi trả bổ sung tiền lương tăng ca bị thiếu cho 05 nhân viên bị ảnh hưởng vào kỳ lương ngày 10/9.\n2. Ban Giám đốc đã đưa ra văn bản cảnh cáo nghiêm khắc đối với Quản lý ca Nguyễn Văn A về trách nhiệm quản lý và phê duyệt chấm công.\n3. Từ ngày 15/9, xưởng Assembly 2 áp dụng thí điểm quy trình tự động đồng bộ giờ quẹt thẻ lên hệ thống ERP, loại bỏ hoàn toàn việc nhập tay giờ công để đảm bảo công bằng tuyệt đối.\n\nPhòng ER đã hoàn thành xử lý vụ việc và chính thức đóng hồ sơ. Chúc anh/chị nhiều sức khỏe và an tâm công tác!\n\nTrân trọng,\nBộ phận Quan hệ Lao động (ER) SEHC.`,
+                    first_response_at: firstRespAt,
+                    resolved_at: resAt1,
+                    submitted_at: subAt1,
+                    created_at: subAt1,
+                    updated_at: resAt1
+                }
+            ];
+
+            const mockAttachments = [
+                {
+                    attachment_id: 'a0b9a65d-2c78-4ea7-9a05-18ee91176bc0',
+                    grievance_id: demoGrievanceId,
+                    storage_path: 'mock-bucket/demo/photo_chup_bang_cham_cong.jpg',
+                    original_file_name: 'photo_chup_bang_cham_cong.jpg',
+                    mime_type: 'image/jpeg',
+                    file_size_bytes: 1245000,
+                    uploaded_at: subAt1
+                },
+                {
+                    attachment_id: 'b1c3a65d-2c78-4ea7-9a05-18ee91176bc1',
+                    grievance_id: demoGrievanceId,
+                    storage_path: 'mock-bucket/demo/file_excel_lich_su_quet_the_ca_nhan.xlsx',
+                    original_file_name: 'file_excel_lich_su_quet_the_ca_nhan.xlsx',
+                    mime_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    file_size_bytes: 421000,
+                    uploaded_at: subAt1
+                }
+            ];
+
+            localStorage.setItem('mock_grievances', JSON.stringify(mockGrievances));
+            localStorage.setItem('mock_attachments', JSON.stringify(mockAttachments));
+            console.log('Demo data successfully initialized. Try looking up pincode: 123456');
+        }
+    }
+</script>
+
+</body>
+</html>

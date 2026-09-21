@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Trang Quản Trị - SEHC SpeakUp Admin</title>
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js for Interactive Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Exports -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0033A0; /* Samsung Classic Blue */
+            --primary-light: #E8EFFF;
+            --primary-dark: #002270;
+            --accent-color: #0A84FF; /* Electric Samsung Accent */
+            --success-color: #1A7F37; /* Clean Corporate Green */
+            --success-light: #DFF2E3;
+            --warning-color: #B25E00; /* Warm Amber */
+            --warning-light: #FFF1E0;
+            --error-color: #D32F2F; /* Soft Red */
+            --error-light: #FCE8E6;
+            --info-color: #007A87; /* Teal */
+            --info-light: #E2F5F8;
+            --bg-color: #F4F6FC; /* Light gray-blue background */
+            --card-bg: #FFFFFF;
+            --text-main: #1F2024;
+            --text-secondary: #4A4D54;
+            --text-muted: #7A808C;
+            --border-color: #E2E5EC;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 24px rgba(0, 35, 120, 0.06);
+            --shadow-lg: 0 16px 48px rgba(0, 35, 120, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-family: 'Lexend', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #001A54, #0033A0);
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            text-align: center;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-logo {
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-logo svg {
+            filter: drop-shadow(0 4px 8px rgba(0, 51, 160, 0.2));
+        }
+
+        .login-logo h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .login-logo p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* --- ADMIN DASHBOARD LAYOUT --- */
+        .admin-layout {
+            display: none; /* Hidden by default, shown when logged in */
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .samsung-logo {
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+
+        .admin-badge {
+            background-color: #000000;
+            color: #FFFFFF;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-logout:hover {
+            background-color: var(--error-light);
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        /* Demo Banner */
+        .demo-banner {
+            background: linear-gradient(135deg, #FFF9E6, #FFF1C5);
+            color: var(--warning-color);
+            padding: 10px 30px;
+            font-size: 13px;
+            font-weight: 600;
+            border-bottom: 1px solid #FFE29A;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- DASHBOARD WRAPPER --- */
+        .admin-container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Navigation Tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 2px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            font-family: var(--font-family);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--primary-dark);
+        }
+
+        /* Tab Content Section */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- METRICS CARDS GRID --- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-card-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .metric-card-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1.1;
+        }
+
+        .metric-card.status-new { border-left: 4px solid var(--accent-color); }
+        .metric-card.status-review { border-left: 4px solid var(--info-color); }
+        .metric-card.status-investigating { border-left: 4px solid var(--warning-color); }
+        .metric-card.status-resolved { border-left: 4px solid var(--success-color); }
+
+        /* --- STATISTICS SECTION --- */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 18px;
+            border-bottom: 1.5px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Progress list styled metrics */
+        .stat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stat-item-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .stat-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #ECEFF5;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0;
+        }
+
+        /* --- FILTER & SEARCH BAR --- */
+        .filter-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1.2fr auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        @media (max-width: 768px) {
+            .filter-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- EXCEL BUTTON --- */
+        .btn-excel {
+            background-color: #1A7F37 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #1A7F37 !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 42px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-excel:hover {
+            background-color: #13622B !important;
+            border-color: #13622B !important;
+            color: #FFFFFF !important;
+        }
+
+        /* --- CHART TOGGLE BUTTONS --- */
+        .chart-toggles {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-btn-toggle {
+            padding: 6px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #FFFFFF;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: var(--font-family);
+        }
+
+        .chart-btn-toggle:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .chart-btn-toggle.active {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* --- DATA TABLE --- */
+        .table-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #F8F9FC;
+            font-weight: 700;
+            color: var(--text-secondary);
+            padding: 14px 16px;
+            border-bottom: 1.5px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #F5F7FF;
+            cursor: pointer;
+        }
+
+        .td-subject {
+            font-weight: 600;
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
+        .badge-new { background-color: #E2E5EC; color: var(--text-secondary); }
+        .badge-under-review { background-color: var(--info-light); color: var(--info-color); }
+        .badge-investigating { background-color: var(--warning-light); color: var(--warning-color); }
+        .badge-awaiting-employee { background-color: #FFF2E0; color: #E65100; }
+        .badge-resolved { background-color: var(--success-light); color: var(--success-color); }
+        .badge-closed { background-color: #ECEFF1; color: #455A64; }
+
+        /* --- MODAL WINDOW --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 26, 84, 0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 750px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .btn-close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-close-modal:hover {
+            color: var(--error-color);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .modal-field.full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 600px) {
+            .modal-field.full-width {
+                grid-column: span 1;
+            }
+        }
+
+        .modal-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .modal-value {
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: #F8F9FC;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #ECEFF5;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        /* Attachments link list */
+        .modal-attachments-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .modal-attachment-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid rgba(0, 51, 160, 0.1);
+            transition: var(--transition);
+        }
+
+        .modal-attachment-link:hover {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        /* Admin action form in modal */
+        .admin-action-box {
+            background-color: #F5F7FF;
+            border: 1.5px solid #C0D6FF;
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            font-family: var(--font-family);
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        select:focus, textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-family: var(--font-family);
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-color);
+        }
+
+        /* --- LOADING OVERLAY --- */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--primary-light);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* --- TOAST SYSTEM --- */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3000;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: #323232;
+            color: #FFFFFF;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .toast.toast-error { background-color: var(--error-color); }
+        .toast.toast-success { background-color: var(--success-color); }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ================= LOGIN SCREEN ================= -->
+<div id="loginSection" class="login-wrapper">
+    <div class="login-card">
+        <div class="login-logo">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="24" height="24" rx="6" fill="#0033A0"/>
+                <path d="M12 17a2 2 0 100-4 2 2 0 000 4z" fill="white"/>
+                <path d="M18 10V8c0-3.31-2.69-6-6-6S6 4.69 6 8v2H5v11h14V10h-1zm-10 0V8c0-2.21 1.79-4 4-4s4 1.79 4 4v2H8z" fill="white"/>
+            </svg>
+            <h2>SEHC SpeakUp Admin</h2>
+            <p>Hệ thống Quản trị Tiếp nhận & Giải quyết Khiếu nại</p>
+        </div>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group" style="text-align: left; margin-bottom: 24px;">
+                <label for="admin_password">Mật khẩu bảo mật Admin</label>
+                <input type="password" id="admin_password" placeholder="Nhập mật khẩu quản trị..." required style="letter-spacing: 2px; text-align: center; font-size: 16px;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">Đăng nhập hệ thống</button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= MAIN ADMIN LAYOUT ================= -->
+<div id="adminLayout" class="admin-layout">
+    <!-- Header -->
+    <header>
+        <div class="header-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="24" height="24" rx="6" fill="#0033A0"/>
+                <path d="M7 16H8.5V11.5C8.5 10.67 9.17 10 10 10H14C14.83 10 15.5 10.67 15.5 11.5V16H17V11.5C17 9.84 15.66 8.5 14 8.5H10C8.34 8.5 7 9.84 7 11.5V16Z" fill="white"/>
+                <circle cx="12" cy="6" r="1.5" fill="white"/>
+            </svg>
+            <span class="samsung-logo">SEHC SpeakUp</span>
+            <span class="admin-badge">ER Portal</span>
+        </div>
+        <div class="header-actions">
+            <span id="adminGreeting" style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Chào Cán bộ ER,</span>
+            <button class="btn-logout" onclick="handleLogout()">Đăng xuất</button>
+        </div>
+    </header>
+
+    <!-- Demo mode alert banner -->
+    <div id="demo-banner" class="demo-banner" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--warning-color)">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+        <span>Chế độ Demo (Chưa kết nối Supabase) - Toàn bộ dữ liệu hiển thị là dữ liệu mẫu lưu tại máy của bạn.</span>
+    </div>
+
+    <!-- Container -->
+    <div class="admin-container">
+        
+        <!-- Navigation Tabs -->
+        <div class="admin-tabs">
+            <button id="tabBtnStats" class="tab-btn active" onclick="switchTab('stats')">Tổng Quan Thống Kê</button>
+            <button id="tabBtnList" class="tab-btn" onclick="switchTab('list')">Danh Sách Khiếu Nại</button>
+        </div>
+
+        <!-- ================= TAB 1: STATISTICS & METRICS ================= -->
+        <section id="tab-stats" class="tab-content active">
+            <!-- Counters Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-card-title">Tổng khiếu nại</span>
+                    <span class="metric-card-value" id="stat-total">0</span>
+                </div>
+                <div class="metric-card status-new">
+                    <span class="metric-card-title">Mới tiếp nhận (New)</span>
+                    <span class="metric-card-value" id="stat-new">0</span>
+                </div>
+                <div class="metric-card status-review">
+                    <span class="metric-card-title">Đang xem xét</span>
+                    <span class="metric-card-value" id="stat-under-review">0</span>
+                </div>
+                <div class="metric-card status-investigating">
+                    <span class="metric-card-title">Đang xác minh</span>
+                    <span class="metric-card-value" id="stat-investigating">0</span>
+                </div>
+                <div class="metric-card status-resolved">
+                    <span class="metric-card-title">Đã giải quyết</span>
+                    <span class="metric-card-value" id="stat-resolved">0</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Charts / Distributions -->
+            <div class="dashboard-row">
+                <!-- Category distribution -->
+                <div class="panel-card">
+                    <div class="panel-title">Phân loại theo Loại khiếu nại</div>
+                    <div id="categoryStatsContainer" class="stat-list">
+                        <!-- Stat items will be dynamically rendered here -->
+                    </div>
+                </div>
+
+                <!-- Monthly/Yearly and status distributions -->
+                <div class="panel-card" style="display: flex; flex-direction: column; gap: 24px;">
+                    <div>
+                        <div class="panel-title">Theo trạng thái xử lý</div>
+                        <div id="statusStatsContainer" class="stat-list">
+                            <!-- Status items dynamically rendered -->
+                        </div>
+                    </div>
+                    <div>
+                        <div class="panel-title">Thống kê theo Tháng / Năm nhận đơn</div>
+                        <div id="timelineStatsContainer" class="stat-list">
+                            <!-- Monthly stats dynamically rendered -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Chart Panel -->
+            <div class="dashboard-row" style="grid-template-columns: 1fr; margin-top: 24px;">
+                <div class="panel-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                        <div class="panel-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">Biểu đồ Thống kê Khiếu nại</div>
+                        <div class="chart-toggles">
+                            <button id="btnChartMonth" class="chart-btn-toggle active" onclick="updateChartPeriod('month')">Tháng</button>
+                            <button id="btnChartQuarter" class="chart-btn-toggle" onclick="updateChartPeriod('quarter')">Quý</button>
+                            <button id="btnChartYear" class="chart-btn-toggle" onclick="updateChartPeriod('year')">Năm</button>
+                        </div>
+                    </div>
+                    <div style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="grievanceInteractiveChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: GRIEVANCES LIST ================= -->
+        <section id="tab-list" class="tab-content">
+            <!-- Filters and search bar -->
+            <div class="filter-panel">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="searchBar">Tìm kiếm hồ sơ</label>
+                    <input type="text" id="searchBar" placeholder="Tìm theo tiêu đề, chi tiết, mã PIN, MSNV..." oninput="filterGrievances()">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filterStatus">Lọc theo trạng thái</label>
+                    <select id="filterStatus" onchange="filterGrievances()">
+                        <option value="all">-- Tất cả trạng thái --</option>
+                        <option value="new">Mới tiếp nhận (New)</option>
+                        <option value="under_review">Đang xem xét (Under Review)</option>
+                        <option value="investigating">Đang xác minh (Investigating)</option>
+                        <option value="awaiting_employee">Chờ nhân viên phản hồi</option>
+                        <option value="resolved">Đã phản hồi (Resolved)</option>
+                        <option value="closed">Đóng hồ sơ (Closed)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filterCategory">Lọc theo chủ đề</label>
+                    <select id="filterCategory" onchange="filterGrievances()">
+                        <option value="all">-- Tất cả chủ đề --</option>
+                        <!-- Categories dynamically loaded -->
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0; display: flex; align-items: end;">
+                    <button class="btn btn-excel" onclick="exportToExcel()">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-top: -2px;">
+                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                        </svg>
+                        Tải Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabular list -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 130px;">Thời gian gửi</th>
+                            <th>Mã PIN</th>
+                            <th>Loại khiếu nại</th>
+                            <th>Tiêu đề sự việc</th>
+                            <th>Người phản ánh</th>
+                            <th>MSNV</th>
+                            <th style="width: 140px; text-align: center;">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grievanceTableBody">
+                        <!-- Table rows dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<!-- ================= DETAIL VIEW MODAL ================= -->
+<div id="detailModal" class="modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">Hồ Sơ Khiếu Nại Chi Tiết</span>
+            <button class="btn-close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            
+            <!-- Section 1: Basic Info -->
+            <div>
+                <div class="modal-section-title">1. Thông tin chung</div>
+                <div class="modal-grid">
+                    <div class="modal-field">
+                        <span class="modal-label">Mã số hồ sơ (UUID)</span>
+                        <span class="modal-value" id="modalId" style="font-family: monospace; font-size: 11px;"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Thời gian gửi đơn</span>
+                        <span class="modal-value" id="modalSubmittedAt"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Mã PIN truy cập</span>
+                        <span class="modal-value" id="modalPincode" style="font-weight: bold; color: var(--primary-color);"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Phân loại sự việc</span>
+                        <span class="modal-value" id="modalCategory" style="font-weight: 600;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Reporter info -->
+            <div>
+                <div class="modal-section-title">2. Thông tin người gửi (Ẩn danh / Công khai)</div>
+                <div class="modal-grid">
+                    <div class="modal-field">
+                        <span class="modal-label">Họ và tên</span>
+                        <span class="modal-value" id="modalReporterName"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Mã số nhân viên</span>
+                        <span class="modal-value" id="modalEmployeeId"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Bộ phận</span>
+                        <span class="modal-value" id="modalDepartment"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Số điện thoại liên hệ</span>
+                        <span class="modal-value" id="modalPhoneNumber"></span>
+                    </div>
+                    <div class="modal-field full-width">
+                        <span class="modal-label">Email nhận phản hồi</span>
+                        <span class="modal-value" id="modalEmail" style="font-weight: 500;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Event Details -->
+            <div>
+                <div class="modal-section-title">3. Chi tiết vụ việc phản ánh</div>
+                <div class="modal-grid">
+                    <div class="modal-field full-width">
+                        <span class="modal-label">Tiêu đề phản ánh</span>
+                        <span class="modal-value" id="modalSubject" style="font-weight: bold;"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Thời gian xảy ra</span>
+                        <span class="modal-value" id="modalIncidentAt"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Vị trí xảy ra sự việc</span>
+                        <span class="modal-value" id="modalIncidentLocation"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Khu vực làm việc</span>
+                        <span class="modal-value" id="modalWorkArea"></span>
+                    </div>
+                    <div class="modal-field">
+                        <span class="modal-label">Những ai liên quan / chứng kiến</span>
+                        <span class="modal-value" id="modalInvolvedPeople"></span>
+                    </div>
+                    <div class="modal-field full-width">
+                        <span class="modal-label">Chi tiết nội dung phản ánh</span>
+                        <span class="modal-value" id="modalDetail"></span>
+                    </div>
+                    <div class="modal-field full-width">
+                        <span class="modal-label">Mong muốn / Đề xuất giải quyết</span>
+                        <span class="modal-value" id="modalRequestedAction"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Attachments -->
+            <div id="modalAttachmentsBox">
+                <div class="modal-section-title">4. Tệp tin bằng chứng đính kèm</div>
+                <div class="modal-attachments-list" id="modalAttachments">
+                    <!-- Links to storage files loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Section 5: ER Action Form -->
+            <div class="admin-action-box">
+                <div class="modal-section-title" style="color: var(--primary-dark); border-bottom-color: #C0D6FF;">Xử lý giải quyết khiếu nại (Phòng ER)</div>
+                <form id="actionForm" onsubmit="saveGrievanceAction(event)">
+                    <div class="form-group">
+                        <label for="actionStatus">Trạng thái xử lý</label>
+                        <select id="actionStatus" required>
+                            <option value="new">Mới tiếp nhận (New)</option>
+                            <option value="under_review">Đang xem xét (Under Review)</option>
+                            <option value="investigating">Đang xác minh (Investigating)</option>
+                            <option value="awaiting_employee">Chờ nhân viên phản hồi</option>
+                            <option value="resolved">Đã phản hồi (Resolved)</option>
+                            <option value="closed">Đóng hồ sơ (Closed)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="actionResponse">Nội dung phản hồi chính thức cho nhân viên</label>
+                        <textarea id="actionResponse" rows="6" placeholder="Nhập câu trả lời chính thức của Ban tổ chức gửi cho nhân viên tại đây. Nhân viên sẽ đọc được câu trả lời này khi tra cứu bằng mã PIN..." required></textarea>
+                    </div>
+                    <div style="font-size: 11px; color: var(--primary-color); font-weight: 500; margin-bottom: 12px; line-height: 1.4;">
+                        <strong>🔔 Email tự động:</strong> Khi bạn lưu phản hồi mới, hệ thống sẽ tự động gửi email thông báo bảo mật đến hòm thư nhận phản hồi của nhân viên, đính kèm link trang web và mã PIN tra cứu.
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Cập nhật & Gửi thông báo cho nhân viên</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loadingText" class="loading-text">Đang tải dữ liệu...</div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- JAVASCRIPT SYSTEM -->
+<script>
+    // --- SUPABASE CONFIGURATION ---
+    const supabaseUrl = 'https://wvfolaoukphocflrdqxj.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2Zm9sYW91a3Bob2NmbHJkcXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MDg0OTQsImV4cCI6MjEwNTI4NDQ5NH0.aBMGvrAckYDbM2RpyksdN5sWjav-PhYdS2xichfnpNU';
+
+    let supabaseClient = null;
+    let isDemoMode = true;
+    let allGrievances = []; // Holds fetched data
+    let selectedGrievance = null; // Currently opened in modal
+
+    // --- RECOVERY INITIALIZATION FOR OFFLINE -> ONLINE ---
+    async function initSupabase() {
+        const isConfigured = supabaseUrl && !supabaseUrl.startsWith('YOUR_SUPABASE') && supabaseAnonKey && !supabaseAnonKey.startsWith('YOUR_SUPABASE');
+        const demoBanner = document.getElementById('demo-banner');
+
+        if (!isConfigured) {
+            isDemoMode = true;
+            demoBanner.style.display = 'flex';
+            console.log("Admin Portal running in DEMO mode (unconfigured).");
+            return false;
+        }
+
+        if (typeof supabase !== 'undefined') {
+            try {
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                isDemoMode = false;
+                demoBanner.style.display = 'none';
+                demoBanner.innerHTML = '<span>⚠️ Chế độ Demo (Chưa kết nối Supabase) - Toàn bộ dữ liệu hiển thị là dữ liệu mẫu lưu tại máy của bạn.</span>';
+                console.log("Supabase Client initialized successfully.");
+                return true;
+            } catch (err) {
+                console.error("Error loading Supabase Client:", err);
+                isDemoMode = true;
+                demoBanner.style.display = 'flex';
+                demoBanner.innerHTML = '<span>⚠️ Lỗi kết nối Supabase SDK. Chuyển sang chế độ DEMO!</span>';
+                return false;
+            }
+        } else {
+            console.log("Supabase library missing. Trying to load dynamically...");
+            try {
+                await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+                if (typeof supabase !== 'undefined') {
+                    supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                    isDemoMode = false;
+                    demoBanner.style.display = 'none';
+                    demoBanner.innerHTML = '<span>⚠️ Chế độ Demo (Chưa kết nối Supabase) - Toàn bộ dữ liệu hiển thị là dữ liệu mẫu lưu tại máy của bạn.</span>';
+                    console.log("Supabase Client initialized after dynamic script load.");
+                    return true;
+                }
+            } catch (err) {
+                console.error("Failed to dynamically load Supabase script:", err);
+            }
+            
+            isDemoMode = true;
+            demoBanner.style.display = 'flex';
+            demoBanner.innerHTML = '<span>⚠️ Lỗi kết nối Supabase SDK. Chuyển sang chế độ DEMO!</span>';
+            return false;
+        }
+    }
+
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Khởi tạo Supabase kết nối
+        await initSupabase();
+
+        // Tự động kiểm tra xem đã login từ trước trong phiên làm việc hiện tại chưa
+        const isAuth = sessionStorage.getItem('admin_authenticated');
+        if (isAuth === 'true') {
+            showAdminDashboard();
+        }
+    });
+
+    // --- SECURE PASSWORD LOGIN ---
+    async function handleLogin(event) {
+        event.preventDefault();
+        const pwd = document.getElementById('admin_password').value;
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.add('active');
+        document.getElementById('loadingText').innerText = 'Đang xác thực thông tin...';
+
+        await delay(800); // Tạo độ trễ tự nhiên
+
+        // Thử khởi tạo lại Supabase SDK nếu trước đó lỗi / chưa kết nối được (ví dụ do load offline)
+        if (isDemoMode) {
+            await initSupabase();
+        }
+
+        let isValid = false;
+
+        if (isDemoMode) {
+            // Chế độ Demo: Chấp nhận pass "134679"
+            isValid = (pwd === '134679');
+        } else {
+            // Chế độ Live: Gọi hàm RPC bảo mật kiểm tra mật khẩu trên database
+            try {
+                const { data, error } = await supabaseClient
+                    .rpc('verify_admin_password', { pass_input: pwd });
+
+                if (error) throw error;
+                isValid = data;
+            } catch (err) {
+                console.error("Error authenticating:", err);
+                
+                // NẾU gõ đúng pass 134679 mà gặp lỗi kết nối mạng thực tế, cho phép Admin hoạt động ở chế độ ngoại tuyến
+                showToast("Lỗi kết nối cơ sở dữ liệu xác thực! Đang hoạt động ở chế độ ngoại tuyến/DEMO.", "error");
+                
+                if (pwd === '134679') {
+                    isDemoMode = true;
+                    isValid = true;
+                } else {
+                    loadingOverlay.classList.remove('active');
+                    return;
+                }
+            }
+        }
+
+        loadingOverlay.classList.remove('active');
+
+        if (isValid) {
+            sessionStorage.setItem('admin_authenticated', 'true');
+            sessionStorage.setItem('admin_password_key', pwd); // Lưu mật khẩu vào Session để gọi RPC bảo mật sau này
+            showToast("Đăng nhập hệ thống Admin thành công!", "success");
+            showAdminDashboard();
+        } else {
+            showToast("Mật khẩu Admin không chính xác. Vui lòng nhập lại!", "error");
+        }
+    }
+
+    function handleLogout() {
+        sessionStorage.removeItem('admin_authenticated');
+        sessionStorage.removeItem('admin_password_key');
+        document.getElementById('adminLayout').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'flex';
+        showToast("Đã đăng xuất tài khoản an toàn.", "success");
+    }
+
+    // --- SHOW CORE INTERFACE ---
+    async function showAdminDashboard() {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('adminLayout').style.display = 'flex';
+        
+        await loadAllGrievancesData();
+    }
+
+    // --- DATABASE LOAD FLOW ---
+    async function loadAllGrievancesData() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.add('active');
+        document.getElementById('loadingText').innerText = 'Đang đồng bộ dữ liệu hồ sơ...';
+
+        // Thử khởi tạo lại Supabase xem đã online chưa
+        if (isDemoMode) {
+            await initSupabase();
+        }
+
+        if (isDemoMode) {
+            await delay(1200);
+            // Load from LocalStorage
+            allGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+            
+            // Nếu trống trong localStorage, lấy dữ liệu demo mặc định ở index.html
+            if (allGrievances.length === 0) {
+                initializeMockGrievanceFromIndex();
+                allGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+            }
+        } else {
+            try {
+                const pwd = sessionStorage.getItem('admin_password_key');
+                // Gọi hàm RPC bảo mật tải toàn bộ dữ liệu thay vì dùng SELECT trực tiếp (bị chặn bởi RLS)
+                const { data, error } = await supabaseClient
+                    .rpc('get_all_grievances_for_admin', { pass_input: pwd });
+
+                if (error) throw error;
+                allGrievances = data || [];
+            } catch (err) {
+                console.error("Error fetching grievances:", err);
+                showToast("Không thể đồng bộ cơ sở dữ liệu Supabase! Chuyển sang dữ liệu ngoại tuyến.", "error");
+                // Fallback
+                allGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+                if (allGrievances.length === 0) {
+                    initializeMockGrievanceFromIndex();
+                    allGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+                }
+            }
+        }
+
+        loadingOverlay.classList.remove('active');
+
+        // Render Dashboard và Table
+        populateStatistics();
+        populateGrievanceTable();
+        populateCategoryFilter();
+    }
+
+    // --- POPULATE DASHBOARD METRICS ---
+    function populateStatistics() {
+        const total = allGrievances.length;
+        
+        const countNew = allGrievances.filter(g => g.status === 'new').length;
+        const countUnderReview = allGrievances.filter(g => g.status === 'under_review').length;
+        const countInvestigating = allGrievances.filter(g => g.status === 'investigating').length;
+        const countAwaiting = allGrievances.filter(g => g.status === 'awaiting_employee').length;
+        const countResolved = allGrievances.filter(g => g.status === 'resolved').length;
+        const countClosed = allGrievances.filter(g => g.status === 'closed').length;
+
+        // Cập nhật các ô số liệu đầu trang
+        document.getElementById('stat-total').innerText = total;
+        document.getElementById('stat-new').innerText = countNew;
+        document.getElementById('stat-under-review').innerText = countUnderReview;
+        document.getElementById('stat-investigating').innerText = countInvestigating;
+        document.getElementById('stat-resolved').innerText = countResolved;
+
+        // Render phân loại Trạng thái dạng thanh phần trăm
+        const statusContainer = document.getElementById('statusStatsContainer');
+        statusContainer.innerHTML = '';
+        
+        const statusMap = [
+            { code: 'new', label: 'Mới tiếp nhận', count: countNew, color: 'var(--text-muted)' },
+            { code: 'under_review', label: 'Đang xem xét', count: countUnderReview, color: 'var(--info-color)' },
+            { code: 'investigating', label: 'Đang xác minh', count: countInvestigating, color: 'var(--warning-color)' },
+            { code: 'awaiting_employee', label: 'Chờ nhân viên phản hồi', count: countAwaiting, color: '#E65100' },
+            { code: 'resolved', label: 'Đã phản hồi (Resolved)', count: countResolved, color: 'var(--success-color)' },
+            { code: 'closed', label: 'Đóng hồ sơ (Closed)', count: countClosed, color: '#455A64' }
+        ];
+
+        statusMap.forEach(item => {
+            const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) : 0;
+            const statHtml = `
+                <div class="stat-item">
+                    <div class="stat-item-label">
+                        <span>${item.label}</span>
+                        <span style="font-weight: 700; color: ${item.color}">${item.count} hồ sơ (${percentage}%)</span>
+                    </div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar" style="width: ${percentage}%; background-color: ${item.color}"></div>
+                    </div>
+                </div>
+            `;
+            statusContainer.insertAdjacentHTML('beforeend', statHtml);
+        });
+
+        // Render phân loại Loại khiếu nại dạng phần trăm
+        const catContainer = document.getElementById('categoryStatsContainer');
+        catContainer.innerHTML = '';
+
+        // Đếm số lượng theo category
+        const catCounts = {};
+        allGrievances.forEach(g => {
+            catCounts[g.grievance_category] = (catCounts[g.grievance_category] || 0) + 1;
+        });
+
+        // Sắp xếp các danh mục nhiều nhất lên đầu
+        const sortedCats = Object.keys(catCounts).sort((a,b) => catCounts[b] - catCounts[a]);
+
+        if (sortedCats.length === 0) {
+            catContainer.innerHTML = '<i>Chưa có dữ liệu phân loại sự việc.</i>';
+        } else {
+            sortedCats.forEach(cat => {
+                const count = catCounts[cat];
+                const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                const statHtml = `
+                    <div class="stat-item">
+                        <div class="stat-item-label">
+                            <span style="font-weight: 500;">${cat}</span>
+                            <span style="font-weight: 700; color: var(--primary-color)">${count} đơn (${percentage}%)</span>
+                        </div>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" style="width: ${percentage}%;"></div>
+                        </div>
+                    </div>
+                `;
+                catContainer.insertAdjacentHTML('beforeend', statHtml);
+            });
+        }
+
+        // Render thống kê Timeline theo Tháng / Năm
+        const timelineContainer = document.getElementById('timelineStatsContainer');
+        timelineContainer.innerHTML = '';
+
+        const timelineCounts = {};
+        allGrievances.forEach(g => {
+            if (!g.submitted_at) return;
+            const date = new Date(g.submitted_at);
+            const key = `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`;
+            timelineCounts[key] = (timelineCounts[key] || 0) + 1;
+        });
+
+        const timelineKeys = Object.keys(timelineCounts).sort().reverse(); // Tháng mới nhất lên trên
+
+        if (timelineKeys.length === 0) {
+            timelineContainer.innerHTML = '<i>Chưa có dữ liệu trục thời gian.</i>';
+        } else {
+            timelineKeys.forEach(key => {
+                const count = timelineCounts[key];
+                const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                const statHtml = `
+                    <div class="stat-item">
+                        <div class="stat-item-label">
+                            <span>${key}</span>
+                            <span style="font-weight: 700; color: var(--info-color)">${count} đơn (${percentage}%)</span>
+                        </div>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" style="width: ${percentage}%; background-color: var(--info-color)"></div>
+                        </div>
+                    </div>
+                `;
+                timelineContainer.insertAdjacentHTML('beforeend', statHtml);
+            });
+        }
+
+        // Render interactive chart
+        try {
+            const activeBtn = document.querySelector('.chart-btn-toggle.active');
+            const activePeriod = activeBtn ? (activeBtn.id === 'btnChartQuarter' ? 'quarter' : (activeBtn.id === 'btnChartYear' ? 'year' : 'month')) : 'month';
+            renderInteractiveChart(activePeriod);
+        } catch (err) {
+            console.error("Error drawing interactive chart:", err);
+        }
+    }
+
+    // --- INTERACTIVE CHART SYSTEM (CHART.JS) ---
+    let myInteractiveChart = null;
+
+    function renderInteractiveChart(period = 'month') {
+        const ctx = document.getElementById('grievanceInteractiveChart');
+        if (!ctx) return;
+
+        // Group data
+        const counts = {};
+        
+        allGrievances.forEach(g => {
+            if (!g.submitted_at) return;
+            const date = new Date(g.submitted_at);
+            if (isNaN(date.getTime())) return;
+
+            let key = '';
+            if (period === 'month') {
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                key = `${month}/${date.getFullYear()}`;
+            } else if (period === 'quarter') {
+                const quarter = Math.floor(date.getMonth() / 3) + 1;
+                key = `Quý ${quarter}/${date.getFullYear()}`;
+            } else if (period === 'year') {
+                key = `${date.getFullYear()}`;
+            }
+            
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        // Sort keys chronologically
+        let sortedKeys = Object.keys(counts).sort((a, b) => {
+            if (period === 'month') {
+                const [m1, y1] = a.split('/').map(Number);
+                const [m2, y2] = b.split('/').map(Number);
+                return (y1 - y2) || (m1 - m2);
+            } else if (period === 'quarter') {
+                const [qPart1, yPart1] = a.split('/');
+                const [qPart2, yPart2] = b.split('/');
+                const q1 = Number(qPart1.replace('Quý ', ''));
+                const q2 = Number(qPart2.replace('Quý ', ''));
+                const y1 = Number(yPart1);
+                const y2 = Number(yPart2);
+                return (y1 - y2) || (q1 - q2);
+            } else if (period === 'year') {
+                return Number(a) - Number(b);
+            }
+            return a.localeCompare(b);
+        });
+
+        const labels = sortedKeys;
+        const dataValues = sortedKeys.map(key => counts[key]);
+
+        // Destroy previous chart if it exists
+        if (myInteractiveChart) {
+            myInteractiveChart.destroy();
+        }
+
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.warn("Chart.js is not loaded yet.");
+            return;
+        }
+
+        // Render Chart.js
+        myInteractiveChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng đơn khiếu nại',
+                    data: dataValues,
+                    backgroundColor: 'rgba(0, 51, 160, 0.7)', // Samsung Blue with opacity
+                    borderColor: 'rgba(0, 51, 160, 1)',
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                    barPercentage: 0.5,
+                    maxBarThickness: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1E293B',
+                        titleColor: '#FFFFFF',
+                        bodyColor: '#FFFFFF',
+                        padding: 10,
+                        cornerRadius: 6,
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.raw} hồ sơ`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            color: '#64748B',
+                            font: {
+                                family: 'Lexend',
+                                size: 11
+                            }
+                        },
+                        grid: {
+                            color: '#F1F5F9'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#64748B',
+                            font: {
+                                family: 'Lexend',
+                                size: 11
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateChartPeriod(period) {
+        document.querySelectorAll('.chart-btn-toggle').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        let activeBtnId = 'btnChartMonth';
+        if (period === 'quarter') activeBtnId = 'btnChartQuarter';
+        if (period === 'year') activeBtnId = 'btnChartYear';
+        
+        const activeBtn = document.getElementById(activeBtnId);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+
+        renderInteractiveChart(period);
+    }
+
+    // --- EXCEL EXPORT SYSTEM (SHEETJS) ---
+    function exportToExcel() {
+        if (typeof XLSX === 'undefined') {
+            showToast("Thư viện SheetJS chưa được tải!", "error");
+            return;
+        }
+
+        if (allGrievances.length === 0) {
+            showToast("Không có dữ liệu khiếu nại để xuất Excel!", "warning");
+            return;
+        }
+
+        // Lọc dữ liệu theo bộ lọc hiện tại trên UI để xuất đúng những gì hiển thị
+        const query = document.getElementById('searchBar').value.toLowerCase().trim();
+        const status = document.getElementById('filterStatus').value;
+        const category = document.getElementById('filterCategory').value;
+
+        const dataToExport = allGrievances.filter(g => {
+            const matchesQuery = 
+                query === '' ||
+                g.grievance_subject.toLowerCase().includes(query) ||
+                g.grievance_detail.toLowerCase().includes(query) ||
+                g.user_pincode.toString().includes(query) ||
+                (g.reporter_name && g.reporter_name.toLowerCase().includes(query)) ||
+                (g.employee_id && g.employee_id.toString().includes(query));
+
+            const matchesStatus = (status === 'all') || (g.status === status);
+            const matchesCategory = (category === 'all') || (g.grievance_category === category);
+
+            return matchesQuery && matchesStatus && matchesCategory;
+        });
+
+        if (dataToExport.length === 0) {
+            showToast("Danh sách hiện tại trống, không có dữ liệu để xuất!", "warning");
+            return;
+        }
+
+        // Map data sang cột tiếng Việt thân thiện
+        const excelRows = dataToExport.map((g, index) => {
+            let statusText = g.status;
+            if (g.status === 'new') statusText = 'Mới tiếp nhận (New)';
+            else if (g.status === 'under_review') statusText = 'Đang xem xét (Under Review)';
+            else if (g.status === 'investigating') statusText = 'Đang xác minh (Investigating)';
+            else if (g.status === 'awaiting_employee') statusText = 'Chờ nhân viên phản hồi';
+            else if (g.status === 'resolved') statusText = 'Đã giải quyết (Resolved)';
+            else if (g.status === 'closed') statusText = 'Đóng hồ sơ (Closed)';
+
+            return {
+                'STT': index + 1,
+                'Mã hồ sơ': g.grievance_id,
+                'Mã PIN tra cứu': g.user_pincode,
+                'Thời gian gửi': formatDate(g.submitted_at),
+                'Chủ đề khiếu nại': g.grievance_category,
+                'Tiêu đề sự việc': g.grievance_subject,
+                'Họ và tên người gửi': g.reporter_name || 'Ẩn danh',
+                'MSNV': g.employee_id || 'Ẩn danh',
+                'Bộ phận': g.department || 'Ẩn danh',
+                'Số điện thoại': g.phone_number || 'Ẩn danh',
+                'Email liên hệ': g.email || 'Ẩn danh',
+                'Thời gian xảy ra': g.incident_at || '',
+                'Địa điểm xảy ra': g.incident_location || '',
+                'Khu vực làm việc': g.work_area || '',
+                'Những người liên quan': g.involved_people || '',
+                'Chi tiết sự việc': g.grievance_detail,
+                'Yêu cầu / Đề xuất': g.requested_action || '',
+                'Trạng thái': statusText,
+                'Nội dung phản hồi từ ER': g.er_response || ''
+            };
+        });
+
+        // Tạo sheet và workbook
+        const worksheet = XLSX.utils.json_to_sheet(excelRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Danh sách khiếu nại");
+
+        // Tự động căn chỉnh độ rộng cột cột Excel
+        const max_widths = [];
+        excelRows.forEach(row => {
+            Object.keys(row).forEach((key, colIdx) => {
+                const val = row[key] ? row[key].toString() : '';
+                const length = Math.max(val.length, key.length);
+                max_widths[colIdx] = Math.max(max_widths[colIdx] || 10, length);
+            });
+        });
+        worksheet['!cols'] = max_widths.map(w => ({ w: Math.min(w + 2, 50) })); // Giới hạn max width 50
+
+        // Ghi file Excel tải xuống máy
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        XLSX.writeFile(workbook, `SEHC_SpeakUp_Grievances_${dateStr}.xlsx`);
+        showToast("Đã xuất tệp Excel thành công!", "success");
+    }
+
+    // --- POPULATE TABLE LIST ---
+    function populateGrievanceTable(dataToRender = allGrievances) {
+        const tbody = document.getElementById('grievanceTableBody');
+        tbody.innerHTML = '';
+
+        if (dataToRender.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
+                        Không có đơn khiếu nại nào phù hợp với bộ lọc tìm kiếm.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        dataToRender.forEach(g => {
+            const dateStr = formatDate(g.submitted_at);
+            const badgeClass = getStatusBadgeClass(g.status);
+            const badgeText = getStatusBadgeText(g.status);
+
+            const row = document.createElement('tr');
+            row.onclick = () => openGrievanceModal(g);
+            row.innerHTML = `
+                <td style="font-weight: 500;">${dateStr}</td>
+                <td style="font-family: monospace; font-weight: 700; color: var(--primary-color);">${g.user_pincode}</td>
+                <td style="color: var(--text-secondary); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${g.grievance_category}</td>
+                <td class="td-subject" title="${escapeHtml(g.grievance_subject)}">${escapeHtml(g.grievance_subject)}</td>
+                <td>${escapeHtml(g.reporter_name || 'Ẩn danh 👤')}</td>
+                <td style="font-family: monospace;">${g.employee_id || '<i>N/A</i>'}</td>
+                <td style="text-align: center;">
+                    <span class="badge ${badgeClass}">${badgeText}</span>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Populate Category select filter dropdown dynamically
+    function populateCategoryFilter() {
+        const select = document.getElementById('filterCategory');
+        
+        // Save current selection
+        const prevValue = select.value;
+        
+        select.innerHTML = '<option value="all">-- Tất cả chủ đề --</option>';
+
+        const categoriesSet = new Set();
+        allGrievances.forEach(g => {
+            if (g.grievance_category) categoriesSet.add(g.grievance_category);
+        });
+
+        categoriesSet.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.innerText = cat;
+            select.appendChild(option);
+        });
+
+        // Restore previous selection if still available
+        if (categoriesSet.has(prevValue)) {
+            select.value = prevValue;
+        } else {
+            select.value = 'all';
+        }
+    }
+
+    // --- CLIENT SIDE FILTERING ---
+    function filterGrievances() {
+        const query = document.getElementById('searchBar').value.toLowerCase().trim();
+        const status = document.getElementById('filterStatus').value;
+        const category = document.getElementById('filterCategory').value;
+
+        const filtered = allGrievances.filter(g => {
+            // Search filter
+            const matchesQuery = 
+                query === '' ||
+                g.grievance_subject.toLowerCase().includes(query) ||
+                g.grievance_detail.toLowerCase().includes(query) ||
+                g.user_pincode.toString().includes(query) ||
+                (g.reporter_name && g.reporter_name.toLowerCase().includes(query)) ||
+                (g.employee_id && g.employee_id.toString().includes(query));
+
+            // Status filter
+            const matchesStatus = (status === 'all') || (g.status === status);
+
+            // Category filter
+            const matchesCategory = (category === 'all') || (g.grievance_category === category);
+
+            return matchesQuery && matchesStatus && matchesCategory;
+        });
+
+        populateGrievanceTable(filtered);
+    }
+
+    // --- MODAL ACTIONS ---
+    async function openGrievanceModal(grievance) {
+        selectedGrievance = grievance;
+
+        // Cập nhật thông tin trong modal
+        document.getElementById('modalId').innerText = grievance.grievance_id;
+        document.getElementById('modalSubmittedAt').innerText = formatDate(grievance.submitted_at);
+        document.getElementById('modalPincode').innerText = grievance.user_pincode;
+        document.getElementById('modalCategory').innerText = grievance.grievance_category;
+        
+        document.getElementById('modalReporterName').innerText = grievance.reporter_name || 'Ẩn danh hoàn toàn 👤';
+        document.getElementById('modalEmployeeId').innerText = grievance.employee_id || 'Ẩn danh';
+        document.getElementById('modalDepartment').innerText = grievance.department || 'Ẩn danh';
+        document.getElementById('modalPhoneNumber').innerText = grievance.phone_number || 'Ẩn danh';
+        document.getElementById('modalEmail').innerText = grievance.email;
+
+        document.getElementById('modalSubject').innerText = grievance.grievance_subject;
+        document.getElementById('modalIncidentAt').innerText = grievance.incident_at;
+        document.getElementById('modalIncidentLocation').innerText = grievance.incident_location;
+        document.getElementById('modalWorkArea').innerText = grievance.work_area;
+        document.getElementById('modalInvolvedPeople').innerText = grievance.involved_people;
+        document.getElementById('modalDetail').innerText = grievance.grievance_detail;
+        document.getElementById('modalRequestedAction').innerText = grievance.requested_action;
+
+        // Điền dữ liệu vào form xử lý của Admin
+        document.getElementById('actionStatus').value = grievance.status;
+        document.getElementById('actionResponse').value = grievance.er_response || '';
+
+        // Tải danh sách file đính kèm
+        const attachmentsContainer = document.getElementById('modalAttachments');
+        const attachmentsBox = document.getElementById('modalAttachmentsBox');
+        attachmentsContainer.innerHTML = '';
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.add('active');
+        document.getElementById('loadingText').innerText = 'Đang kiểm tra tệp tin đính kèm...';
+
+        if (isDemoMode) {
+            await delay(500);
+            const mockAttachments = JSON.parse(localStorage.getItem('mock_attachments') || '[]');
+            const grievanceAttachments = mockAttachments.filter(a => a.grievance_id === grievance.grievance_id);
+            renderModalAttachments(grievanceAttachments);
+            loadingOverlay.classList.remove('active');
+        } else {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('attachments')
+                    .select('*')
+                    .eq('grievance_id', grievance.grievance_id);
+
+                if (error) throw error;
+                renderModalAttachments(data || []);
+                loadingOverlay.classList.remove('active');
+            } catch (err) {
+                console.error("Error loading attachments:", err);
+                loadingOverlay.classList.remove('active');
+                showToast("Không thể đồng bộ danh sách file đính kèm!", "error");
+            }
+        }
+
+        // Hiện modal
+        document.getElementById('detailModal').classList.add('active');
+    }
+
+    function renderModalAttachments(attachments) {
+        const container = document.getElementById('modalAttachments');
+        const box = document.getElementById('modalAttachmentsBox');
+
+        if (attachments.length === 0) {
+            box.style.display = 'none';
+            return;
+        }
+
+        box.style.display = 'block';
+
+        attachments.forEach(att => {
+            let fileUrl = '#';
+            if (!isDemoMode && supabaseClient) {
+                // Lấy URL từ storage công khai của Supabase
+                const { data } = supabaseClient.storage
+                    .from('grievance-attachments')
+                    .getPublicUrl(att.storage_path);
+                fileUrl = data.publicUrl;
+            } else {
+                fileUrl = 'javascript:void(0);';
+            }
+
+            const sizeInMB = (att.file_size_bytes / (1024 * 1024)).toFixed(2);
+            const link = document.createElement('a');
+            link.className = 'modal-attachment-link';
+            link.href = fileUrl;
+            link.target = isDemoMode ? '_self' : '_blank';
+            if (isDemoMode) {
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    showToast(`Demo: Bạn click mở tệp "${att.original_file_name}" (${sizeInMB} MB)`, "success");
+                };
+            }
+            link.innerHTML = `
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+                </svg>
+                <span>${escapeHtml(att.original_file_name)}</span>
+            `;
+            container.appendChild(link);
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.remove('active');
+        selectedGrievance = null;
+    }
+
+    // --- SAVE ER ACTION & UPDATE DATABASE ---
+    async function saveGrievanceAction(event) {
+        event.preventDefault();
+        if (!selectedGrievance) return;
+
+        const newStatus = document.getElementById('actionStatus').value;
+        const newResponse = document.getElementById('actionResponse').value.trim();
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.add('active');
+        document.getElementById('loadingText').innerText = 'Đang xử lý biểu mẫu & cập nhật dữ liệu...';
+
+        const nowIso = new Date().toISOString();
+
+        // Chuẩn bị dữ liệu cập nhật
+        const updateData = {
+            status: newStatus,
+            er_response: newResponse,
+            updated_at: nowIso
+        };
+
+        // Gán mốc thời gian lần đầu phản hồi của phòng ER
+        if (newResponse !== '' && !selectedGrievance.first_response_at) {
+            updateData.first_response_at = nowIso;
+        }
+
+        // Gán mốc thời gian giải quyết xong nếu trạng thái chuyển thành Resolved hoặc Closed
+        if ((newStatus === 'resolved' || newStatus === 'closed') && !selectedGrievance.resolved_at) {
+            updateData.resolved_at = nowIso;
+        }
+
+        if (isDemoMode) {
+            // --- DEMO MODE UPDATE ---
+            await delay(1000);
+            const mockGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+            const idx = mockGrievances.findIndex(g => g.grievance_id === selectedGrievance.grievance_id);
+
+            if (idx !== -1) {
+                mockGrievances[idx] = {
+                    ...mockGrievances[idx],
+                    ...updateData
+                };
+                localStorage.setItem('mock_grievances', JSON.stringify(mockGrievances));
+                showToast("Cập nhật phản hồi thành công (Chế độ Demo)!", "success");
+            } else {
+                showToast("Không tìm thấy hồ sơ để cập nhật!", "error");
+            }
+            
+            closeModal();
+            loadingOverlay.classList.remove('active');
+            await loadAllGrievancesData(); // Tải lại bảng và thống kê
+
+        } else {
+            // --- LIVE SUPABASE UPDATE VIA SECURE RPC ---
+            try {
+                const pwd = sessionStorage.getItem('admin_password_key');
+                // Gọi hàm RPC bảo mật cập nhật dữ liệu thay vì UPDATE trực tiếp (bị chặn bởi RLS)
+                const { error } = await supabaseClient
+                    .rpc('update_grievance_by_admin', {
+                        pass_input: pwd,
+                        id_input: selectedGrievance.grievance_id,
+                        status_input: newStatus,
+                        response_input: newResponse
+                    });
+
+                if (error) throw error;
+
+                showToast("Đã lưu phản hồi & Cập nhật trạng thái thành công!", "success");
+                closeModal();
+                loadingOverlay.classList.remove('active');
+                
+                await loadAllGrievancesData(); // Tải lại bảng
+
+            } catch (err) {
+                console.error("Error updating grievance:", err);
+                loadingOverlay.classList.remove('active');
+                showToast(`Lỗi lưu: ${err.message || 'Không thể cập nhật hồ sơ.'}`, "error");
+            }
+        }
+    }
+
+    // --- TAB MANAGEMENT ---
+    function switchTab(tabId) {
+        // Active/inactive button style
+        document.getElementById('tabBtnStats').classList.remove('active');
+        document.getElementById('tabBtnList').classList.remove('active');
+        document.getElementById(`tabBtn${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+
+        // Active/inactive section visibility
+        document.getElementById('tab-stats').classList.remove('active');
+        document.getElementById('tab-list').classList.remove('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+
+        if (tabId === 'stats') {
+            populateStatistics();
+        } else {
+            filterGrievances();
+        }
+    }
+
+    // --- HELPER FUNCTIONS ---
+    function formatDate(dateStr) {
+        if (!dateStr) return 'N/A';
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    function getStatusBadgeClass(status) {
+        switch (status) {
+            case 'new': return 'badge-new';
+            case 'under_review': return 'badge-under-review';
+            case 'investigating': return 'badge-investigating';
+            case 'awaiting_employee': return 'badge-awaiting-employee';
+            case 'resolved': return 'badge-resolved';
+            case 'closed': return 'badge-closed';
+            default: return 'badge-new';
+        }
+    }
+
+    function getStatusBadgeText(status) {
+        switch (status) {
+            case 'new': return 'Mới tiếp nhận';
+            case 'under_review': return 'Đang xem xét';
+            case 'investigating': return 'Đang xác minh';
+            case 'awaiting_employee': return 'Chờ nhân viên';
+            case 'resolved': return 'Đã phản hồi';
+            case 'closed': return 'Đã đóng';
+            default: return status;
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    // Initialize mock default grievance if local storage is clean
+    function initializeMockGrievanceFromIndex() {
+        const now = new Date();
+        const subAt1 = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString();
+        const firstRespAt = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
+        const resAt1 = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString();
+
+        const demoGrievanceId = 'd86cb53e-51c3-4d0d-9b54-f725357a70a8';
+
+        const mockGrievances = [
+            {
+                grievance_id: demoGrievanceId,
+                user_pincode: '123456',
+                reporter_name: '',
+                employee_id: null,
+                department: '',
+                phone_number: null,
+                email: 'nhanvien.giau.ten@gmail.com',
+                work_area: 'Tòa nhà H1, Xưởng Assembly 2',
+                grievance_category: 'Phân biệt đối xử, đối xử không công bằng',
+                grievance_subject: 'Yêu cầu hỗ trợ về quy trình chấm công tại tổ sản xuất',
+                grievance_detail: 'Tôi nhận thấy quy trình tính toán tăng ca (overtime) của bộ phận sản xuất tổ chúng tôi trong tháng 8 có sự không minh bạch và phân biệt đối xử. Một số đồng nghiệp thân quen với Quản lý ca được ưu tiên chấm bù nhiều giờ hơn, trong khi chúng tôi làm việc thực tế cực nhọc lại không được ghi nhận đủ số giờ làm. Khi tôi có ý kiến thì Quản lý ca né tránh giải thích và tỏ thái độ lạnh nhạt.',
+                incident_at: 'Thường xuyên trong tháng 8/2026 (vào các ca làm việc tối từ 18:00 - 22:00)',
+                incident_location: 'Văn phòng Tổ trưởng sản xuất và Bảng tin chấm công xưởng Assembly 2',
+                involved_people: 'Quản lý ca Nguyễn Văn A và một số nhân viên tổ ca B',
+                requested_action: 'Kính mong Bộ phận Quan hệ Lao động (ER) làm việc khách quan, kiểm tra lại toàn bộ dữ liệu quẹt thẻ ra vào cổng của xưởng đối chiếu với bảng giờ công đã duyệt để trả lại sự công bằng và thu nhập xứng đáng cho nhân viên.',
+                status: 'resolved',
+                er_response: `Kính gửi anh/chị phản ánh,\n\nBộ phận Quan hệ Lao động (ER) trân trọng cảm ơn sự dũng cảm và tinh thần lên tiếng của anh/chị giúp ban quản lý hoàn thiện hệ thống.\n\nNgay sau khi tiếp nhận thông tin bảo mật này, đại diện phòng ER đã phối hợp với Trưởng bộ phận Nhân sự tiến hành rà soát đột xuất dữ liệu quẹt thẻ kiểm soát của toàn xưởng Assembly 2 từ ngày 01/8 đến 31/8, đối chiếu chi tiết với bảng công được phê duyệt bởi Quản lý Nguyễn Văn A.\n\nKết quả xác minh như sau:\n1. Phát hiện chênh lệch 18 giờ làm thêm chưa được ghi nhận chính xác cho 05 nhân viên (trong đó có phản ánh của anh/chị).\n2. Quản lý ca Nguyễn Văn A thừa nhận đã có sai sót và thiếu sót trong việc nhập liệu thủ công của ca xoay vòng, không có bằng chứng trục lợi cá nhân nhưng quy trình phê duyệt lỏng laxo.\n\nHướng khắc phục xử lý:\n1. Bộ phận Nhân sự đã thực hiện thủ tục chi trả bổ sung tiền lương tăng ca bị thiếu cho 05 nhân viên bị ảnh hưởng vào kỳ lương ngày 10/9.\n2. Ban Giám đốc đã đưa ra văn bản cảnh cáo nghiêm khắc đối với Quản lý ca Nguyễn Văn A về trách nhiệm quản lý và phê duyệt chấm công.\n3. Từ ngày 15/9, xưởng Assembly 2 áp dụng thí điểm quy trình tự động đồng bộ giờ quẹt thẻ lên hệ thống ERP, loại bỏ hoàn toàn việc nhập tay giờ công để đảm bảo công bằng tuyệt đối.\n\nPhòng ER đã hoàn thành xử lý vụ việc và chính thức đóng hồ sơ. Chúc anh/chị nhiều sức khỏe và an tâm công tác!\n\nTrân trọng,\nBộ phận Quan hệ Lao động (ER) SEHC.`,
+                first_response_at: firstRespAt,
+                resolved_at: resAt1,
+                submitted_at: subAt1,
+                created_at: subAt1,
+                updated_at: resAt1
+            }
+        ];
+
+        const mockAttachments = [
+            {
+                attachment_id: 'a0b9a65d-2c78-4ea7-9a05-18ee91176bc0',
+                grievance_id: demoGrievanceId,
+                storage_path: 'mock-bucket/demo/photo_chup_bang_cham_cong.jpg',
+                original_file_name: 'photo_chup_bang_cham_cong.jpg',
+                mime_type: 'image/jpeg',
+                file_size_bytes: 1245000,
+                uploaded_at: subAt1
+            },
+            {
+                attachment_id: 'b1c3a65d-2c78-4ea7-9a05-18ee91176bc1',
+                grievance_id: demoGrievanceId,
+                storage_path: 'mock-bucket/demo/file_excel_lich_su_quet_the_ca_nhan.xlsx',
+                original_file_name: 'file_excel_lich_su_quet_the_ca_nhan.xlsx',
+                mime_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                file_size_bytes: 421000,
+                uploaded_at: subAt1
+            }
+        ];
+
+        localStorage.setItem('mock_grievances', JSON.stringify(mockGrievances));
+        localStorage.setItem('mock_attachments', JSON.stringify(mockAttachments));
+    }
+
+    // Toast alerts helper
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        
+        let icon = '';
+        if (type === 'success') {
+            icon = '<svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+        } else if (type === 'error') {
+            icon = '<svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
+        }
+
+        toast.innerHTML = `${icon}<span>${message}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
