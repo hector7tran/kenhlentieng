@@ -1161,8 +1161,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="phone_number">Số điện thoại</label>
-                    <input type="tel" id="phone_number" inputmode="numeric" placeholder="Ví dụ: 0901234567" oninput="validateNumbersOnly(this)">
+                    <label for="phone_number">Số điện thoại (10 chữ số)</label>
+                    <input type="tel" id="phone_number" inputmode="numeric" placeholder="Ví dụ: 0901234567" maxlength="10" pattern="[0-9]{10}" oninput="validatePhoneNumber(this)">
+                    <div class="input-hint">Chỉ nhập đúng 10 chữ số (nếu điền). Có thể có số '0' ở đầu.</div>
                 </div>
 
                 <!-- Section 3: Communication & Incident Details -->
@@ -1605,6 +1606,10 @@
         input.value = input.value.replace(/[^0-9]/g, '');
     }
 
+    function validatePhoneNumber(input) {
+        input.value = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+    }
+
     function validateNumbersOnly(input) {
         input.value = input.value.replace(/[^0-9]/g, '');
     }
@@ -1732,6 +1737,7 @@
         // 1. Validate Form input
         const pincode = document.getElementById('user_pincode').value;
         const employeeId = document.getElementById('employee_id').value;
+        const phoneNumber = document.getElementById('phone_number').value.trim();
         const email = document.getElementById('email').value;
 
         if (pincode.length !== 6) {
@@ -1741,6 +1747,11 @@
 
         if (employeeId && employeeId.length !== 8) {
             showToast('Mã số nhân viên phải gồm đúng 8 chữ số!', 'error');
+            return;
+        }
+
+        if (phoneNumber && phoneNumber.length !== 10) {
+            showToast('Số điện thoại phải gồm đúng 10 chữ số!', 'error');
             return;
         }
 
@@ -1764,7 +1775,7 @@
             reporter_name: document.getElementById('reporter_name').value.trim() || null,
             employee_id: employeeId ? parseInt(employeeId) : null,
             department: document.getElementById('department').value.trim() || null,
-            phone_number: document.getElementById('phone_number').value.trim() ? parseInt(document.getElementById('phone_number').value) : null,
+            phone_number: phoneNumber || null,
             email: email.trim(),
             work_area: document.getElementById('work_area').value.trim(),
             grievance_category: document.getElementById('grievance_category').value,

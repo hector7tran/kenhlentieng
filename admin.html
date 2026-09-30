@@ -278,6 +278,7 @@
             line-height: 1.1;
         }
 
+        .metric-card.status-unresolved { border-left: 4px solid #E65100; }
         .metric-card.status-new { border-left: 4px solid var(--accent-color); }
         .metric-card.status-review { border-left: 4px solid var(--info-color); }
         .metric-card.status-investigating { border-left: 4px solid var(--warning-color); }
@@ -360,15 +361,41 @@
             border-radius: var(--radius-md);
             padding: 20px;
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .filter-row-main {
             display: grid;
             grid-template-columns: 2fr 1.2fr 1.2fr auto;
             gap: 16px;
             align-items: end;
         }
 
+        .filter-row-time {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            padding-top: 14px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .filter-time-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         @media (max-width: 768px) {
-            .filter-panel {
+            .filter-row-main {
                 grid-template-columns: 1fr;
+            }
+            .filter-row-time {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
 
@@ -862,23 +889,15 @@
 
         <!-- ================= TAB 1: STATISTICS & METRICS ================= -->
         <section id="tab-stats" class="tab-content active">
-            <!-- Counters Grid -->
-            <div class="metrics-grid">
+            <!-- Counters Grid (2 trạng thái: Chưa giải quyết & Đã giải quyết) -->
+            <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
                 <div class="metric-card">
                     <span class="metric-card-title">Tổng khiếu nại</span>
                     <span class="metric-card-value" id="stat-total">0</span>
                 </div>
-                <div class="metric-card status-new">
-                    <span class="metric-card-title">Mới tiếp nhận (New)</span>
-                    <span class="metric-card-value" id="stat-new">0</span>
-                </div>
-                <div class="metric-card status-review">
-                    <span class="metric-card-title">Đang xem xét</span>
-                    <span class="metric-card-value" id="stat-under-review">0</span>
-                </div>
-                <div class="metric-card status-investigating">
-                    <span class="metric-card-title">Đang xác minh</span>
-                    <span class="metric-card-value" id="stat-investigating">0</span>
+                <div class="metric-card status-unresolved">
+                    <span class="metric-card-title">Chưa giải quyết</span>
+                    <span class="metric-card-value" id="stat-unresolved">0</span>
                 </div>
                 <div class="metric-card status-resolved">
                     <span class="metric-card-title">Đã giải quyết</span>
@@ -935,36 +954,85 @@
         <section id="tab-list" class="tab-content">
             <!-- Filters and search bar -->
             <div class="filter-panel">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="searchBar">Tìm kiếm hồ sơ</label>
-                    <input type="text" id="searchBar" placeholder="Tìm theo tiêu đề, chi tiết, mã PIN, MSNV..." oninput="filterGrievances()">
+                <!-- Hàng 1: Tìm kiếm, Trạng thái (2 trạng thái), Chủ đề, Tải Excel -->
+                <div class="filter-row-main">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="searchBar">Tìm kiếm hồ sơ</label>
+                        <input type="text" id="searchBar" placeholder="Tìm theo tiêu đề, chi tiết, mã PIN, MSNV, ER PIC..." oninput="filterGrievances()">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="filterStatus">Lọc theo trạng thái</label>
+                        <select id="filterStatus" onchange="filterGrievances()">
+                            <option value="all">-- Tất cả trạng thái --</option>
+                            <option value="unresolved">Chưa giải quyết</option>
+                            <option value="resolved">Đã giải quyết</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="filterCategory">Lọc theo chủ đề</label>
+                        <select id="filterCategory" onchange="filterGrievances()">
+                            <option value="all">-- Tất cả chủ đề --</option>
+                            <!-- Categories dynamically loaded -->
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0; display: flex; align-items: end;">
+                        <button class="btn btn-excel" onclick="exportToExcel()">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-top: -2px;">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                            </svg>
+                            Tải Excel
+                        </button>
+                    </div>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="filterStatus">Lọc theo trạng thái</label>
-                    <select id="filterStatus" onchange="filterGrievances()">
-                        <option value="all">-- Tất cả trạng thái --</option>
-                        <option value="new">Mới tiếp nhận (New)</option>
-                        <option value="under_review">Đang xem xét (Under Review)</option>
-                        <option value="investigating">Đang xác minh (Investigating)</option>
-                        <option value="awaiting_employee">Chờ nhân viên phản hồi</option>
-                        <option value="resolved">Đã phản hồi (Resolved)</option>
-                        <option value="closed">Đóng hồ sơ (Closed)</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="filterCategory">Lọc theo chủ đề</label>
-                    <select id="filterCategory" onchange="filterGrievances()">
-                        <option value="all">-- Tất cả chủ đề --</option>
-                        <!-- Categories dynamically loaded -->
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 0; display: flex; align-items: end;">
-                    <button class="btn btn-excel" onclick="exportToExcel()">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-top: -2px;">
-                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-                        </svg>
-                        Tải Excel
-                    </button>
+
+                <!-- Hàng 2: Lọc theo thời gian (Quý, Năm, Custom Period) -->
+                <div class="filter-row-time">
+                    <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+                        <label for="filterPeriodType">Lọc theo thời gian</label>
+                        <select id="filterPeriodType" onchange="onPeriodTypeChange()">
+                            <option value="all">-- Tất cả thời gian --</option>
+                            <option value="quarter">Theo Quý</option>
+                            <option value="year">Theo Năm</option>
+                            <option value="custom">Khoảng ngày tùy chọn (Custom)</option>
+                        </select>
+                    </div>
+
+                    <!-- Nhóm chọn Quý (hiện khi chọn 'quarter') -->
+                    <div id="filterQuarterGroup" class="form-group" style="margin-bottom: 0; display: none;">
+                        <label for="filterQuarter">Chọn Quý</label>
+                        <select id="filterQuarter" onchange="filterGrievances()">
+                            <option value="1">Quý 1 (T1 - T3)</option>
+                            <option value="2">Quý 2 (T4 - T6)</option>
+                            <option value="3">Quý 3 (T7 - T9)</option>
+                            <option value="4">Quý 4 (T10 - T12)</option>
+                        </select>
+                    </div>
+
+                    <!-- Nhóm chọn Năm (hiện khi chọn 'quarter' hoặc 'year') -->
+                    <div id="filterYearGroup" class="form-group" style="margin-bottom: 0; display: none;">
+                        <label for="filterYear">Chọn Năm</label>
+                        <select id="filterYear" onchange="filterGrievances()">
+                            <!-- Năm được tự động nạp từ dữ liệu -->
+                        </select>
+                    </div>
+
+                    <!-- Nhóm chọn khoảng thời gian tùy chọn (Custom Period) -->
+                    <div id="filterCustomGroup" class="form-group" style="margin-bottom: 0; display: none;">
+                        <div style="display: flex; gap: 10px; align-items: flex-end;">
+                            <div>
+                                <label for="filterStartDate">Từ ngày</label>
+                                <input type="date" id="filterStartDate" onchange="filterGrievances()">
+                            </div>
+                            <div>
+                                <label for="filterEndDate">Đến ngày</label>
+                                <input type="date" id="filterEndDate" onchange="filterGrievances()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="filterResetTimeGroup" style="margin-bottom: 0; display: none;">
+                        <button type="button" class="btn btn-secondary" onclick="resetTimeFilter()" style="padding: 10px 16px; font-size: 13px;">Đặt lại thời gian</button>
+                    </div>
                 </div>
             </div>
 
@@ -979,6 +1047,7 @@
                             <th>Tiêu đề sự việc</th>
                             <th>Người phản ánh</th>
                             <th>MSNV</th>
+                            <th>ER PIC</th>
                             <th style="width: 140px; text-align: center;">Trạng thái</th>
                         </tr>
                     </thead>
@@ -1020,6 +1089,10 @@
                     <div class="modal-field">
                         <span class="modal-label">Phân loại sự việc</span>
                         <span class="modal-value" id="modalCategory" style="font-weight: 600;"></span>
+                    </div>
+                    <div class="modal-field full-width">
+                        <span class="modal-label">Cán bộ ER phụ trách (ER PIC)</span>
+                        <span class="modal-value" id="modalErPic" style="font-weight: 600; color: var(--primary-color);">Chưa phân công</span>
                     </div>
                 </div>
             </div>
@@ -1101,12 +1174,22 @@
                     <div class="form-group">
                         <label for="actionStatus">Trạng thái xử lý</label>
                         <select id="actionStatus" required>
-                            <option value="new">Mới tiếp nhận (New)</option>
-                            <option value="under_review">Đang xem xét (Under Review)</option>
-                            <option value="investigating">Đang xác minh (Investigating)</option>
-                            <option value="awaiting_employee">Chờ nhân viên phản hồi</option>
-                            <option value="resolved">Đã phản hồi (Resolved)</option>
-                            <option value="closed">Đóng hồ sơ (Closed)</option>
+                            <option value="unresolved">Chưa giải quyết</option>
+                            <option value="resolved">Đã giải quyết</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="actionErPic">Cán bộ ER phụ trách (ER PIC)</label>
+                        <select id="actionErPic">
+                            <option value="">-- Chưa phân công --</option>
+                            <option value="Nguyễn Trần Thiên Duyên">Nguyễn Trần Thiên Duyên</option>
+                            <option value="Cái Minh Quân">Cái Minh Quân</option>
+                            <option value="Lê Nguyên Thanh Thảo">Lê Nguyên Thanh Thảo</option>
+                            <option value="Nguyễn Thành Long">Nguyễn Thành Long</option>
+                            <option value="Nguyễn Minh Tấn">Nguyễn Minh Tấn</option>
+                            <option value="Lê Chí Hòa">Lê Chí Hòa</option>
+                            <option value="Nguyễn Hoàng Duy">Nguyễn Hoàng Duy</option>
+                            <option value="Phan Đặng Phước Thiện">Phan Đặng Phước Thiện</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1336,37 +1419,28 @@
         populateStatistics();
         populateGrievanceTable();
         populateCategoryFilter();
+        populateYearFilter();
     }
 
     // --- POPULATE DASHBOARD METRICS ---
     function populateStatistics() {
         const total = allGrievances.length;
         
-        const countNew = allGrievances.filter(g => g.status === 'new').length;
-        const countUnderReview = allGrievances.filter(g => g.status === 'under_review').length;
-        const countInvestigating = allGrievances.filter(g => g.status === 'investigating').length;
-        const countAwaiting = allGrievances.filter(g => g.status === 'awaiting_employee').length;
-        const countResolved = allGrievances.filter(g => g.status === 'resolved').length;
-        const countClosed = allGrievances.filter(g => g.status === 'closed').length;
+        const countResolved = allGrievances.filter(g => g.status === 'resolved' || g.status === 'closed').length;
+        const countUnresolved = total - countResolved;
 
-        // Cập nhật các ô số liệu đầu trang
+        // Cập nhật các ô số liệu đầu trang (2 trạng thái: Chưa giải quyết & Đã giải quyết)
         document.getElementById('stat-total').innerText = total;
-        document.getElementById('stat-new').innerText = countNew;
-        document.getElementById('stat-under-review').innerText = countUnderReview;
-        document.getElementById('stat-investigating').innerText = countInvestigating;
+        document.getElementById('stat-unresolved').innerText = countUnresolved;
         document.getElementById('stat-resolved').innerText = countResolved;
 
-        // Render phân loại Trạng thái dạng thanh phần trăm
+        // Render phân loại Trạng thái dạng thanh phần trăm (2 trạng thái)
         const statusContainer = document.getElementById('statusStatsContainer');
         statusContainer.innerHTML = '';
         
         const statusMap = [
-            { code: 'new', label: 'Mới tiếp nhận', count: countNew, color: 'var(--text-muted)' },
-            { code: 'under_review', label: 'Đang xem xét', count: countUnderReview, color: 'var(--info-color)' },
-            { code: 'investigating', label: 'Đang xác minh', count: countInvestigating, color: 'var(--warning-color)' },
-            { code: 'awaiting_employee', label: 'Chờ nhân viên phản hồi', count: countAwaiting, color: '#E65100' },
-            { code: 'resolved', label: 'Đã phản hồi (Resolved)', count: countResolved, color: 'var(--success-color)' },
-            { code: 'closed', label: 'Đóng hồ sơ (Closed)', count: countClosed, color: '#455A64' }
+            { code: 'unresolved', label: 'Chưa giải quyết', count: countUnresolved, color: '#E65100' },
+            { code: 'resolved', label: 'Đã giải quyết', count: countResolved, color: 'var(--success-color)' }
         ];
 
         statusMap.forEach(item => {
@@ -1462,6 +1536,73 @@
         } catch (err) {
             console.error("Error drawing interactive chart:", err);
         }
+    }
+
+    // --- TIME FILTER HELPERS ---
+    function populateYearFilter() {
+        const yearSelect = document.getElementById('filterYear');
+        if (!yearSelect) return;
+
+        const yearsSet = new Set();
+        const currentYear = new Date().getFullYear();
+        yearsSet.add(currentYear);
+
+        allGrievances.forEach(g => {
+            if (g.submitted_at) {
+                const d = new Date(g.submitted_at);
+                if (!isNaN(d.getTime())) {
+                    yearsSet.add(d.getFullYear());
+                }
+            }
+        });
+
+        const sortedYears = Array.from(yearsSet).sort((a, b) => b - a);
+        const prevValue = yearSelect.value;
+        yearSelect.innerHTML = '';
+
+        sortedYears.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.innerText = `Năm ${y}`;
+            yearSelect.appendChild(opt);
+        });
+
+        if (prevValue && sortedYears.includes(Number(prevValue))) {
+            yearSelect.value = prevValue;
+        } else {
+            yearSelect.value = currentYear;
+        }
+    }
+
+    function onPeriodTypeChange() {
+        const type = document.getElementById('filterPeriodType').value;
+        const quarterGroup = document.getElementById('filterQuarterGroup');
+        const yearGroup = document.getElementById('filterYearGroup');
+        const customGroup = document.getElementById('filterCustomGroup');
+        const resetGroup = document.getElementById('filterResetTimeGroup');
+
+        quarterGroup.style.display = (type === 'quarter') ? 'block' : 'none';
+        yearGroup.style.display = (type === 'quarter' || type === 'year') ? 'block' : 'none';
+        customGroup.style.display = (type === 'custom') ? 'block' : 'none';
+        resetGroup.style.display = (type !== 'all') ? 'block' : 'none';
+
+        if (type === 'quarter') {
+            const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1;
+            document.getElementById('filterQuarter').value = currentQuarter;
+        }
+
+        filterGrievances();
+    }
+
+    function resetTimeFilter() {
+        document.getElementById('filterPeriodType').value = 'all';
+        document.getElementById('filterQuarterGroup').style.display = 'none';
+        document.getElementById('filterYearGroup').style.display = 'none';
+        document.getElementById('filterCustomGroup').style.display = 'none';
+        document.getElementById('filterResetTimeGroup').style.display = 'none';
+        document.getElementById('filterStartDate').value = '';
+        document.getElementById('filterEndDate').value = '';
+        filterGrievances();
     }
 
     // --- INTERACTIVE CHART SYSTEM (CHART.JS) ---
@@ -1624,24 +1765,58 @@
             return;
         }
 
-        // Lọc dữ liệu theo bộ lọc hiện tại trên UI để xuất đúng những gì hiển thị
+        // Lọc dữ liệu theo toàn bộ bộ lọc hiện tại trên UI (Tìm kiếm, Trạng thái, Chủ đề, Thời gian)
         const query = document.getElementById('searchBar').value.toLowerCase().trim();
         const status = document.getElementById('filterStatus').value;
         const category = document.getElementById('filterCategory').value;
+        const periodType = document.getElementById('filterPeriodType').value;
+        const selectedQuarter = document.getElementById('filterQuarter').value;
+        const selectedYear = document.getElementById('filterYear').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
 
         const dataToExport = allGrievances.filter(g => {
             const matchesQuery = 
                 query === '' ||
-                g.grievance_subject.toLowerCase().includes(query) ||
-                g.grievance_detail.toLowerCase().includes(query) ||
-                g.user_pincode.toString().includes(query) ||
+                (g.grievance_subject && g.grievance_subject.toLowerCase().includes(query)) ||
+                (g.grievance_detail && g.grievance_detail.toLowerCase().includes(query)) ||
+                (g.user_pincode && g.user_pincode.toString().includes(query)) ||
                 (g.reporter_name && g.reporter_name.toLowerCase().includes(query)) ||
-                (g.employee_id && g.employee_id.toString().includes(query));
+                (g.employee_id && g.employee_id.toString().includes(query)) ||
+                (g.er_pic && g.er_pic.toLowerCase().includes(query));
 
-            const matchesStatus = (status === 'all') || (g.status === status);
+            // Trạng thái 2 lựa chọn
+            const isResolved = (g.status === 'resolved' || g.status === 'closed');
+            let matchesStatus = true;
+            if (status === 'resolved') matchesStatus = isResolved;
+            else if (status === 'unresolved') matchesStatus = !isResolved;
+
             const matchesCategory = (category === 'all') || (g.grievance_category === category);
 
-            return matchesQuery && matchesStatus && matchesCategory;
+            // Bộ lọc thời gian (Quý, Năm, Custom)
+            let matchesTime = true;
+            if (periodType !== 'all' && g.submitted_at) {
+                const gDate = new Date(g.submitted_at);
+                if (!isNaN(gDate.getTime())) {
+                    if (periodType === 'year') {
+                        matchesTime = (gDate.getFullYear().toString() === selectedYear);
+                    } else if (periodType === 'quarter') {
+                        const q = Math.floor(gDate.getMonth() / 3) + 1;
+                        matchesTime = (gDate.getFullYear().toString() === selectedYear) && (q.toString() === selectedQuarter);
+                    } else if (periodType === 'custom') {
+                        if (startDate) {
+                            const start = new Date(startDate + 'T00:00:00');
+                            if (gDate < start) matchesTime = false;
+                        }
+                        if (endDate) {
+                            const end = new Date(endDate + 'T23:59:59');
+                            if (gDate > end) matchesTime = false;
+                        }
+                    }
+                }
+            }
+
+            return matchesQuery && matchesStatus && matchesCategory && matchesTime;
         });
 
         if (dataToExport.length === 0) {
@@ -1649,15 +1824,18 @@
             return;
         }
 
-        // Map data sang cột tiếng Việt thân thiện
+        // Map data sang cột tiếng Việt thân thiện - Bổ sung 2 cột: 'Thời gian phản hồi khiếu nại' và 'Tên ER PIC'
         const excelRows = dataToExport.map((g, index) => {
-            let statusText = g.status;
-            if (g.status === 'new') statusText = 'Mới tiếp nhận (New)';
-            else if (g.status === 'under_review') statusText = 'Đang xem xét (Under Review)';
-            else if (g.status === 'investigating') statusText = 'Đang xác minh (Investigating)';
-            else if (g.status === 'awaiting_employee') statusText = 'Chờ nhân viên phản hồi';
-            else if (g.status === 'resolved') statusText = 'Đã giải quyết (Resolved)';
-            else if (g.status === 'closed') statusText = 'Đóng hồ sơ (Closed)';
+            const isResolved = (g.status === 'resolved' || g.status === 'closed');
+            const statusText = isResolved ? 'Đã giải quyết' : 'Chưa giải quyết';
+
+            // Thời gian phản hồi khiếu nại cho nhân viên
+            let responseTimeText = 'Chưa phản hồi';
+            if (g.first_response_at) {
+                responseTimeText = formatDate(g.first_response_at);
+            } else if (g.er_response && g.er_response.trim() !== '') {
+                responseTimeText = formatDate(g.updated_at);
+            }
 
             return {
                 'STT': index + 1,
@@ -1678,6 +1856,8 @@
                 'Chi tiết sự việc': g.grievance_detail,
                 'Yêu cầu / Đề xuất': g.requested_action || '',
                 'Trạng thái': statusText,
+                'Thời gian phản hồi khiếu nại': responseTimeText,
+                'Tên ER PIC': g.er_pic || 'Chưa phân công',
                 'Nội dung phản hồi từ ER': g.er_response || ''
             };
         });
@@ -1687,16 +1867,21 @@
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Danh sách khiếu nại");
 
-        // Tự động căn chỉnh độ rộng cột cột Excel
+        // Tự động căn chỉnh độ rộng cột Excel (chuẩn SheetJS dùng wch - character width)
         const max_widths = [];
         excelRows.forEach(row => {
             Object.keys(row).forEach((key, colIdx) => {
                 const val = row[key] ? row[key].toString() : '';
-                const length = Math.max(val.length, key.length);
-                max_widths[colIdx] = Math.max(max_widths[colIdx] || 10, length);
+                // Nếu ô có nhiều dòng, lấy dòng dài nhất để tính độ rộng hợp lý
+                const lineLengths = val.split('\n').map(l => l.length);
+                const valMaxLen = Math.max(...lineLengths, 0);
+                const length = Math.max(valMaxLen, key.length);
+                max_widths[colIdx] = Math.max(max_widths[colIdx] || 12, length);
             });
         });
-        worksheet['!cols'] = max_widths.map(w => ({ w: Math.min(w + 2, 50) })); // Giới hạn max width 50
+        // Bắt buộc dùng thuộc tính 'wch' của SheetJS để sinh thẻ <col width="..." customWidth="1">.
+        // Nếu dùng sai thuộc tính 'w', SheetJS sẽ không sinh width dẫn đến Excel xem độ rộng = 0 và ẩn sạch các cột A-U.
+        worksheet['!cols'] = max_widths.map(w => ({ wch: Math.min(w + 3, 50) }));
 
         // Ghi file Excel tải xuống máy
         const today = new Date();
@@ -1713,7 +1898,7 @@
         if (dataToRender.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
+                    <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
                         Không có đơn khiếu nại nào phù hợp với bộ lọc tìm kiếm.
                     </td>
                 </tr>
@@ -1735,6 +1920,7 @@
                 <td class="td-subject" title="${escapeHtml(g.grievance_subject)}">${escapeHtml(g.grievance_subject)}</td>
                 <td>${escapeHtml(g.reporter_name || 'Ẩn danh 👤')}</td>
                 <td style="font-family: monospace;">${g.employee_id || '<i>N/A</i>'}</td>
+                <td style="font-weight: 500; color: ${g.er_pic ? 'var(--primary-color)' : 'var(--text-muted)'};">${escapeHtml(g.er_pic || '—')}</td>
                 <td style="text-align: center;">
                     <span class="badge ${badgeClass}">${badgeText}</span>
                 </td>
@@ -1777,24 +1963,56 @@
         const query = document.getElementById('searchBar').value.toLowerCase().trim();
         const status = document.getElementById('filterStatus').value;
         const category = document.getElementById('filterCategory').value;
+        const periodType = document.getElementById('filterPeriodType').value;
+        const selectedQuarter = document.getElementById('filterQuarter').value;
+        const selectedYear = document.getElementById('filterYear').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
 
         const filtered = allGrievances.filter(g => {
             // Search filter
             const matchesQuery = 
                 query === '' ||
-                g.grievance_subject.toLowerCase().includes(query) ||
-                g.grievance_detail.toLowerCase().includes(query) ||
-                g.user_pincode.toString().includes(query) ||
+                (g.grievance_subject && g.grievance_subject.toLowerCase().includes(query)) ||
+                (g.grievance_detail && g.grievance_detail.toLowerCase().includes(query)) ||
+                (g.user_pincode && g.user_pincode.toString().includes(query)) ||
                 (g.reporter_name && g.reporter_name.toLowerCase().includes(query)) ||
-                (g.employee_id && g.employee_id.toString().includes(query));
+                (g.employee_id && g.employee_id.toString().includes(query)) ||
+                (g.er_pic && g.er_pic.toLowerCase().includes(query));
 
-            // Status filter
-            const matchesStatus = (status === 'all') || (g.status === status);
+            // Status filter (2 trạng thái)
+            const isResolved = (g.status === 'resolved' || g.status === 'closed');
+            let matchesStatus = true;
+            if (status === 'resolved') matchesStatus = isResolved;
+            else if (status === 'unresolved') matchesStatus = !isResolved;
 
             // Category filter
             const matchesCategory = (category === 'all') || (g.grievance_category === category);
 
-            return matchesQuery && matchesStatus && matchesCategory;
+            // Time filter (Quý, Năm, Custom)
+            let matchesTime = true;
+            if (periodType !== 'all' && g.submitted_at) {
+                const gDate = new Date(g.submitted_at);
+                if (!isNaN(gDate.getTime())) {
+                    if (periodType === 'year') {
+                        matchesTime = (gDate.getFullYear().toString() === selectedYear);
+                    } else if (periodType === 'quarter') {
+                        const q = Math.floor(gDate.getMonth() / 3) + 1;
+                        matchesTime = (gDate.getFullYear().toString() === selectedYear) && (q.toString() === selectedQuarter);
+                    } else if (periodType === 'custom') {
+                        if (startDate) {
+                            const start = new Date(startDate + 'T00:00:00');
+                            if (gDate < start) matchesTime = false;
+                        }
+                        if (endDate) {
+                            const end = new Date(endDate + 'T23:59:59');
+                            if (gDate > end) matchesTime = false;
+                        }
+                    }
+                }
+            }
+
+            return matchesQuery && matchesStatus && matchesCategory && matchesTime;
         });
 
         populateGrievanceTable(filtered);
@@ -1825,8 +2043,11 @@
         document.getElementById('modalRequestedAction').innerText = grievance.requested_action;
 
         // Điền dữ liệu vào form xử lý của Admin
-        document.getElementById('actionStatus').value = grievance.status;
+        const isResolved = (grievance.status === 'resolved' || grievance.status === 'closed');
+        document.getElementById('actionStatus').value = isResolved ? 'resolved' : 'unresolved';
+        document.getElementById('actionErPic').value = grievance.er_pic || '';
         document.getElementById('actionResponse').value = grievance.er_response || '';
+        document.getElementById('modalErPic').innerText = grievance.er_pic || 'Chưa phân công';
 
         // Tải danh sách file đính kèm
         const attachmentsContainer = document.getElementById('modalAttachments');
@@ -1919,6 +2140,7 @@
         if (!selectedGrievance) return;
 
         const newStatus = document.getElementById('actionStatus').value;
+        const newErPic = document.getElementById('actionErPic').value.trim();
         const newResponse = document.getElementById('actionResponse').value.trim();
 
         const loadingOverlay = document.getElementById('loadingOverlay');
@@ -1930,6 +2152,7 @@
         // Chuẩn bị dữ liệu cập nhật
         const updateData = {
             status: newStatus,
+            er_pic: newErPic || null,
             er_response: newResponse,
             updated_at: nowIso
         };
@@ -1939,8 +2162,8 @@
             updateData.first_response_at = nowIso;
         }
 
-        // Gán mốc thời gian giải quyết xong nếu trạng thái chuyển thành Resolved hoặc Closed
-        if ((newStatus === 'resolved' || newStatus === 'closed') && !selectedGrievance.resolved_at) {
+        // Gán mốc thời gian giải quyết xong nếu trạng thái chuyển thành Resolved
+        if (newStatus === 'resolved' && !selectedGrievance.resolved_at) {
             updateData.resolved_at = nowIso;
         }
 
@@ -1969,18 +2192,27 @@
             // --- LIVE SUPABASE UPDATE VIA SECURE RPC ---
             try {
                 const pwd = sessionStorage.getItem('admin_password_key');
+                let rpcParams = {
+                    pass_input: pwd,
+                    id_input: selectedGrievance.grievance_id,
+                    status_input: newStatus,
+                    response_input: newResponse,
+                    er_pic_input: newErPic || null
+                };
+
                 // Gọi hàm RPC bảo mật cập nhật dữ liệu thay vì UPDATE trực tiếp (bị chặn bởi RLS)
-                const { error } = await supabaseClient
-                    .rpc('update_grievance_by_admin', {
-                        pass_input: pwd,
-                        id_input: selectedGrievance.grievance_id,
-                        status_input: newStatus,
-                        response_input: newResponse
-                    });
+                let { error } = await supabaseClient.rpc('update_grievance_by_admin', rpcParams);
+                
+                // Fallback nếu function trên database chưa thêm tham số er_pic_input
+                if (error && error.message && error.message.includes('function') && error.message.includes('does not exist')) {
+                    delete rpcParams.er_pic_input;
+                    const res = await supabaseClient.rpc('update_grievance_by_admin', rpcParams);
+                    if (res.error) throw res.error;
+                } else if (error) {
+                    throw error;
+                }
 
-                if (error) throw error;
-
-                showToast("Đã lưu phản hồi & Cập nhật trạng thái thành công!", "success");
+                showToast("Đã lưu phản hồi, phân công ER PIC & Cập nhật trạng thái thành công!", "success");
                 closeModal();
                 loadingOverlay.classList.remove('active');
                 
@@ -2031,27 +2263,17 @@
     }
 
     function getStatusBadgeClass(status) {
-        switch (status) {
-            case 'new': return 'badge-new';
-            case 'under_review': return 'badge-under-review';
-            case 'investigating': return 'badge-investigating';
-            case 'awaiting_employee': return 'badge-awaiting-employee';
-            case 'resolved': return 'badge-resolved';
-            case 'closed': return 'badge-closed';
-            default: return 'badge-new';
+        if (status === 'resolved' || status === 'closed') {
+            return 'badge-resolved';
         }
+        return 'badge-unresolved';
     }
 
     function getStatusBadgeText(status) {
-        switch (status) {
-            case 'new': return 'Mới tiếp nhận';
-            case 'under_review': return 'Đang xem xét';
-            case 'investigating': return 'Đang xác minh';
-            case 'awaiting_employee': return 'Chờ nhân viên';
-            case 'resolved': return 'Đã phản hồi';
-            case 'closed': return 'Đã đóng';
-            default: return status;
+        if (status === 'resolved' || status === 'closed') {
+            return 'Đã giải quyết';
         }
+        return 'Chưa giải quyết';
     }
 
     function escapeHtml(text) {
@@ -2103,6 +2325,7 @@
                 involved_people: 'Quản lý ca Nguyễn Văn A và một số nhân viên tổ ca B',
                 requested_action: 'Kính mong Bộ phận Quan hệ Lao động (ER) làm việc khách quan, kiểm tra lại toàn bộ dữ liệu quẹt thẻ ra vào cổng của xưởng đối chiếu với bảng giờ công đã duyệt để trả lại sự công bằng và thu nhập xứng đáng cho nhân viên.',
                 status: 'resolved',
+                er_pic: 'Nguyễn Trần Thiên Duyên',
                 er_response: `Kính gửi anh/chị phản ánh,\n\nBộ phận Quan hệ Lao động (ER) trân trọng cảm ơn sự dũng cảm và tinh thần lên tiếng của anh/chị giúp ban quản lý hoàn thiện hệ thống.\n\nNgay sau khi tiếp nhận thông tin bảo mật này, đại diện phòng ER đã phối hợp với Trưởng bộ phận Nhân sự tiến hành rà soát đột xuất dữ liệu quẹt thẻ kiểm soát của toàn xưởng Assembly 2 từ ngày 01/8 đến 31/8, đối chiếu chi tiết với bảng công được phê duyệt bởi Quản lý Nguyễn Văn A.\n\nKết quả xác minh như sau:\n1. Phát hiện chênh lệch 18 giờ làm thêm chưa được ghi nhận chính xác cho 05 nhân viên (trong đó có phản ánh của anh/chị).\n2. Quản lý ca Nguyễn Văn A thừa nhận đã có sai sót và thiếu sót trong việc nhập liệu thủ công của ca xoay vòng, không có bằng chứng trục lợi cá nhân nhưng quy trình phê duyệt lỏng laxo.\n\nHướng khắc phục xử lý:\n1. Bộ phận Nhân sự đã thực hiện thủ tục chi trả bổ sung tiền lương tăng ca bị thiếu cho 05 nhân viên bị ảnh hưởng vào kỳ lương ngày 10/9.\n2. Ban Giám đốc đã đưa ra văn bản cảnh cáo nghiêm khắc đối với Quản lý ca Nguyễn Văn A về trách nhiệm quản lý và phê duyệt chấm công.\n3. Từ ngày 15/9, xưởng Assembly 2 áp dụng thí điểm quy trình tự động đồng bộ giờ quẹt thẻ lên hệ thống ERP, loại bỏ hoàn toàn việc nhập tay giờ công để đảm bảo công bằng tuyệt đối.\n\nPhòng ER đã hoàn thành xử lý vụ việc và chính thức đóng hồ sơ. Chúc anh/chị nhiều sức khỏe và an tâm công tác!\n\nTrân trọng,\nBộ phận Quan hệ Lao động (ER) SEHC.`,
                 first_response_at: firstRespAt,
                 resolved_at: resAt1,
