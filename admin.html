@@ -1218,8 +1218,24 @@
 
 <!-- JAVASCRIPT SYSTEM -->
 <script>
-    // --- SUPABASE CONFIGURATION ---
-    const supabaseUrl = 'https://wvfolaoukphocflrdqxj.supabase.co';
+    // --- SUPABASE CONFIGURATION (HỖ TRỢ VERCEL REVERSE PROXY) ---
+    // Mạng nội bộ công ty chặn trực tiếp các API tên miền *.supabase.co.
+    // Hệ thống tự động phát hiện và định tuyến qua Vercel Reverse Proxy (/supabase) để máy tính công ty truy cập bình thường:
+    function getOptimalSupabaseUrl() {
+        if (typeof window !== 'undefined' && window.location) {
+            const hostname = window.location.hostname;
+            // 1. Khi chạy trực tiếp trên Vercel (*.vercel.app hoặc domain riêng trên Vercel):
+            // Dùng đường dẫn proxy cùng origin (/supabase) -> Vượt qua tường lửa công ty và không bị chặn CORS
+            if (hostname.includes('vercel.app') || (window.location.protocol.startsWith('http') && hostname !== 'localhost' && hostname !== '127.0.0.1')) {
+                return window.location.origin + '/supabase';
+            }
+        }
+        // 2. Khi chạy local hoặc mở file HTML trên máy tính công ty:
+        // Định tuyến qua proxy Vercel production để không bị tường lửa công ty chặn
+        return 'https://kenhlentieng.vercel.app/supabase';
+    }
+
+    const supabaseUrl = getOptimalSupabaseUrl();
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2Zm9sYW91a3Bob2NmbHJkcXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MDg0OTQsImV4cCI6MjEwNTI4NDQ5NH0.aBMGvrAckYDbM2RpyksdN5sWjav-PhYdS2xichfnpNU';
 
     let supabaseClient = null;
