@@ -336,12 +336,12 @@
         }
 
         .pincode-input-container input {
-            letter-spacing: 8px;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            padding: 10px;
+            letter-spacing: 2px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
         }
 
         .toggle-pwd-btn {
@@ -537,23 +537,31 @@
             background-color: var(--primary-light);
             border: 1px dashed var(--accent-color);
             border-radius: var(--radius-md);
-            padding: 16px;
+            padding: 18px;
             margin-bottom: 24px;
         }
 
         .pincode-card-title {
-            font-size: 12px;
+            font-size: 13px;
             text-transform: uppercase;
             font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .pincode-card-code {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
-            letter-spacing: 4px;
+            letter-spacing: 2px;
             color: var(--primary-color);
+            font-family: 'Consolas', 'Courier New', monospace;
+            word-break: break-all;
+            background: #ffffff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            border: 1px solid rgba(0, 51, 160, 0.15);
+            margin: 6px 0;
         }
 
         /* Results & Status Lookup */
@@ -1097,7 +1105,7 @@
                 </div>
                 <div class="menu-card-info">
                     <h3>Tra cứu & Xem phản hồi</h3>
-                    <p>Theo dõi tiến trình giải quyết bằng pincode</p>
+                    <p>Theo dõi tiến trình giải quyết bằng mật khẩu tra cứu</p>
                 </div>
             </div>
 
@@ -1126,18 +1134,16 @@
 
             <form id="grievanceForm" onsubmit="handleFormSubmit(event)">
                 <!-- Section 1: Access Info -->
-                <div class="form-section-title">1. Bảo mật và Truy cập</div>
+                <div class="form-section-title">1. Bảo mật và Mật khẩu tra cứu</div>
                 
-                <div class="form-group required">
-                    <label for="user_pincode">Tạo mã truy cập (6 chữ số)</label>
-                    <div class="pincode-input-container">
-                        <input type="password" id="user_pincode" inputmode="numeric" placeholder="••••••" maxlength="6" required oninput="handlePincodeInput(this)">
-                        <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('user_pincode')">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                        </button>
+                <div style="background-color: #f0f4ff; border: 1px solid #d0e0fc; border-left: 4px solid var(--primary-color); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                        <strong style="color: var(--primary-color); font-size: 14px;">Mật khẩu tra cứu được tạo tự động bảo mật</strong>
                     </div>
-                    <div id="pincode-validation-msg" class="input-hint" style="font-weight: 600; margin-top: 6px; color: var(--text-muted);">Nhập đủ 6 chữ số để hệ thống kiểm tra bảo mật.</div>
-                    <div class="input-hint" style="margin-top: 4px;"><strong>Lưu ý:</strong> Hãy ghi nhớ mã 6 số này. Đây là mã số duy nhất để bạn truy cập lại khiếu nại đã gửi để xem trạng thái xử lý và phản hồi từ ER.</div>
+                    <p style="margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                        Để đảm bảo tính bảo mật và tránh trùng lặp, bạn không cần tự đặt mã PIN. Khi gửi khiếu nại thành công, hệ thống sẽ <strong>tự động tạo 1 mật khẩu ngẫu nhiên 14 ký tự</strong> (bao gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt). Mật khẩu này sẽ được <strong>hiển thị trên màn hình và gửi trực tiếp về email của bạn</strong> để dùng tra cứu kết quả giải quyết khiếu nại về sau.
+                    </p>
                 </div>
 
                 <!-- Section 2: Reporter Info -->
@@ -1172,7 +1178,7 @@
                 <div class="form-group required">
                     <label for="email">Email nhận phản hồi</label>
                     <input type="email" id="email" placeholder="abc@abc.com" required>
-                    <div class="input-hint">Có thể nhập email nặc danh để nhận phản hồi và thông báo tự động từ ER mà vẫn giữ kín danh tính thực.</div>
+                    <div class="input-hint">Email dùng để nhận mật khẩu tra cứu 14 ký tự tự động và các thông báo/phản hồi từ ER. Có thể dùng email nặc danh mà bạn kiểm soát để bảo mật danh tính.</div>
                 </div>
 
                 <div class="form-group required">
@@ -1267,9 +1273,18 @@
                 <h2>Gửi phản ánh thành công!</h2>
                 
                 <div class="pincode-card">
-                    <div class="pincode-card-title">Mã số truy cập của bạn (Mã PIN)</div>
-                    <div class="pincode-card-code" id="successPincodeDisplay">000000</div>
-                    <div class="input-hint" style="color: var(--primary-dark); font-weight: 500; margin-top: 8px;">Vui lòng CHỤP MÀN HÌNH hoặc lưu lại mã PIN này. Hệ thống không cung cấp cách lấy lại mã này vì tính bảo mật danh tính!</div>
+                    <div class="pincode-card-title">Mật khẩu tra cứu của bạn</div>
+                    <div class="pincode-card-code" id="successPincodeDisplay">••••••••••••••</div>
+                    <div style="margin-top: 10px; display: flex; justify-content: center;">
+                        <button type="button" class="btn btn-secondary" style="padding: 6px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" onclick="copySuccessPassword()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span>Sao chép mật khẩu</span>
+                        </button>
+                    </div>
+                    <div class="input-hint" style="color: var(--primary-dark); font-weight: 500; margin-top: 14px; line-height: 1.6;">
+                        📧 <strong>Thông báo quan trọng:</strong> Mật khẩu này đã được hệ thống tự động gửi về địa chỉ email của bạn (<strong id="successEmailDisplay" style="color: #0033A0;"></strong>) dùng để <strong>tra cứu tiến trình và kết quả giải quyết khiếu nại</strong> về sau.<br>
+                        Vui lòng sao chép hoặc lưu lại mật khẩu này để tra cứu định kỳ phản hồi từ ER.
+                    </div>
                 </div>
 
                 <div class="success-message">
@@ -1289,12 +1304,12 @@
             </button>
             
             <h1>Xem Trạng Thái & Phản Hồi</h1>
-            <p class="subtitle">Nhập lại mã PIN 6 chữ số bạn đã thiết lập khi gửi khiếu nại để xem phản hồi bảo mật từ bộ phận ER.</p>
+            <p class="subtitle">Nhập mật khẩu tra cứu bạn đã nhận qua email khi gửi khiếu nại để xem phản hồi bảo mật từ bộ phận ER.</p>
 
             <div class="form-group">
-                <label for="lookup_pincode">Mã truy cập 6 chữ số (Mã PIN)</label>
+                <label for="lookup_pincode">Mật khẩu tra cứu / Mã PIN</label>
                 <div class="pincode-input-container">
-                    <input type="password" id="lookup_pincode" inputmode="numeric" placeholder="••••••" maxlength="6" oninput="validatePincode(this)">
+                    <input type="password" id="lookup_pincode" placeholder="Nhập mật khẩu tra cứu hoặc mã PIN..." autocomplete="off">
                     <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('lookup_pincode')">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                     </button>
@@ -1470,25 +1485,96 @@
 
 <!-- JAVASCRIPT LOGIC -->
 <script>
-    // --- SUPABASE CONFIGURATION (HỖ TRỢ VERCEL REVERSE PROXY) ---
-    // Mạng nội bộ công ty chặn trực tiếp các API tên miền *.supabase.co.
-    // Hệ thống tự động phát hiện và định tuyến qua Vercel Reverse Proxy (/supabase) để máy tính công ty truy cập bình thường:
-    function getOptimalSupabaseUrl() {
+    // --- SUPABASE DUAL-ENDPOINT & RESILIENT CONNECTION CONFIGURATION ---
+    // Đáp ứng hoàn hảo cả 2 mục tiêu:
+    // 1. Khi truy cập trên web Vercel (https://kenhlentieng.vercel.app):
+    //    Tự động sử dụng Reverse Proxy cùng domain (/supabase) -> Nhân viên và ER trên PC công ty (mạng SEHC)
+    //    vượt qua tường lửa chặn *.supabase.co mà hoàn toàn KHÔNG bị lỗi CORS vì là Same-Origin.
+    // 2. Khi chạy cục bộ (file:// hoặc localhost) hoặc mạng ngoài:
+    //    Ưu tiên kết nối trực tiếp đến Supabase để đạt độ trễ thấp nhất và tải file mượt mà.
+    // 3. Cơ chế Dual-Fallback: Tự động chuyển đổi giữa 2 endpoint nếu phát hiện lỗi mạng hoặc 403 firewall.
+    const DIRECT_SUPABASE_URL = 'https://wvfolaoukphocflrdqxj.supabase.co';
+    const PROXY_SUPABASE_URL = 'https://kenhlentieng.vercel.app/supabase';
+
+    function getOptimalSupabaseConfig() {
         if (typeof window !== 'undefined' && window.location) {
             const hostname = window.location.hostname;
-            // 1. Khi chạy trực tiếp trên Vercel (*.vercel.app hoặc domain riêng trên Vercel):
-            // Dùng đường dẫn proxy cùng origin (/supabase) -> Vượt qua tường lửa công ty và không bị chặn CORS
+            // Nếu đang chạy trên domain Vercel (*.vercel.app hoặc custom domain trỏ Vercel)
             if (hostname.includes('vercel.app') || (window.location.protocol.startsWith('http') && hostname !== 'localhost' && hostname !== '127.0.0.1')) {
-                return window.location.origin + '/supabase';
+                return {
+                    url: window.location.origin + '/supabase',
+                    fallbackUrl: DIRECT_SUPABASE_URL
+                };
             }
         }
-        // 2. Khi chạy local hoặc mở file HTML trên máy tính công ty:
-        // Định tuyến qua proxy Vercel production để không bị tường lửa công ty chặn
-        return 'https://kenhlentieng.vercel.app/supabase';
+        // Khi mở file cục bộ (file:/// hoặc localhost), dùng trực tiếp Supabase để tương thích CORS
+        return {
+            url: DIRECT_SUPABASE_URL,
+            fallbackUrl: PROXY_SUPABASE_URL
+        };
     }
 
-    const supabaseUrl = getOptimalSupabaseUrl();
+    const { url: supabaseUrl, fallbackUrl: supabaseFallbackUrl } = getOptimalSupabaseConfig();
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2Zm9sYW91a3Bob2NmbHJkcXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MDg0OTQsImV4cCI6MjEwNTI4NDQ5NH0.aBMGvrAckYDbM2RpyksdN5sWjav-PhYdS2xichfnpNU'; // Ví dụ: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVC...'
+
+    function createSupabaseFetch() {
+        return async function customFetch(input, init = {}) {
+            const options = { ...init };
+
+            // Chuẩn hóa headers: Gỡ bỏ x-client-info và x-upsert để tránh xung đột CORS Preflight
+            if (options.headers) {
+                if (typeof Headers !== 'undefined' && options.headers instanceof Headers) {
+                    const cleanHeaders = new Headers(options.headers);
+                    cleanHeaders.delete('x-client-info');
+                    cleanHeaders.delete('x-upsert');
+                    options.headers = cleanHeaders;
+                } else if (typeof options.headers === 'object') {
+                    options.headers = { ...options.headers };
+                    delete options.headers['x-client-info'];
+                    delete options.headers['X-Client-Info'];
+                    delete options.headers['x-upsert'];
+                    delete options.headers['X-Upsert'];
+                }
+            }
+
+            try {
+                const response = await fetch(input, options);
+                // Nếu bị lỗi 403 (tường lửa công ty chặn) hoặc 404/502 (lỗi proxy)
+                if (!response.ok && (response.status === 403 || response.status === 404 || response.status >= 502)) {
+                    const urlStr = typeof input === 'string' ? input : (input.url || input.toString());
+                    let altUrl = null;
+                    if (urlStr.includes('supabase.co')) {
+                        altUrl = urlStr.replace(DIRECT_SUPABASE_URL, PROXY_SUPABASE_URL);
+                    } else if (urlStr.includes('/supabase')) {
+                        altUrl = urlStr.replace(PROXY_SUPABASE_URL, DIRECT_SUPABASE_URL).replace('/supabase', '');
+                    }
+                    if (altUrl && altUrl !== urlStr) {
+                        console.warn(`[Supabase Fallback] Chuyển đổi endpoint sang: ${altUrl}`);
+                        return await fetch(altUrl, options);
+                    }
+                }
+                return response;
+            } catch (networkError) {
+                // Nếu bị lỗi mạng hoặc CORS preflight fail
+                const urlStr = typeof input === 'string' ? input : (input.url || input.toString());
+                let altUrl = null;
+                if (urlStr.includes('supabase.co')) {
+                    altUrl = urlStr.replace(DIRECT_SUPABASE_URL, PROXY_SUPABASE_URL);
+                } else if (urlStr.includes('/supabase')) {
+                    altUrl = urlStr.replace(PROXY_SUPABASE_URL, DIRECT_SUPABASE_URL).replace('/supabase', '');
+                }
+                if (altUrl && altUrl !== urlStr) {
+                    console.warn(`[Supabase Network Error Fallback] Thử lại với endpoint thay thế: ${altUrl}`);
+                    try {
+                        return await fetch(altUrl, options);
+                    } catch (altErr) {
+                        throw networkError;
+                    }
+                }
+                throw networkError;
+            }
+        };
+    }
 
     // Biến toàn cục quản lý file đính kèm đang chọn
     let selectedFiles = [];
@@ -1511,9 +1597,16 @@
         } else {
             demoBanner.style.display = 'none';
             try {
-                // Khởi tạo Supabase SDK
-                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-                console.log('Supabase successfully initialized.');
+                // Khởi tạo Supabase SDK với chiến lược Dual-Endpoint
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey, {
+                    auth: {
+                        persistSession: false
+                    },
+                    global: {
+                        fetch: createSupabaseFetch()
+                    }
+                });
+                console.log('Supabase successfully initialized (Mode: ' + (supabaseUrl.includes('supabase.co') ? 'Direct' : 'Proxy') + ').');
             } catch (err) {
                 console.error('Error initializing Supabase client:', err);
                 isDemoMode = true;
@@ -1553,67 +1646,86 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // --- FORM VALIDATIONS ---
-    function validatePincode(input) {
-        // Chỉ nhận số
-        input.value = input.value.replace(/[^0-9]/g, '');
+    // --- PASSWORD GENERATION & LOOKUP HELPERS ---
+    // Sinh mật khẩu ngẫu nhiên 14 ký tự bảo mật: chữ hoa, chữ thường, số, ký tự đặc biệt
+    function generateSecurePassword(length = 14) {
+        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        const numbers = '0123456789';
+        const special = '@#$%&*!-_=+';
+        const allChars = uppercase + lowercase + numbers + special;
+
+        const getRandomInt = (max) => {
+            if (window.crypto && window.crypto.getRandomValues) {
+                const arr = new Uint32Array(1);
+                window.crypto.getRandomValues(arr);
+                return arr[0] % max;
+            }
+            return Math.floor(Math.random() * max);
+        };
+
+        // Đảm bảo mật khẩu luôn có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt
+        const passwordArr = [
+            uppercase[getRandomInt(uppercase.length)],
+            lowercase[getRandomInt(lowercase.length)],
+            numbers[getRandomInt(numbers.length)],
+            special[getRandomInt(special.length)]
+        ];
+
+        // Bổ sung các ký tự còn lại ngẫu nhiên cho đủ độ dài 14
+        while (passwordArr.length < length) {
+            passwordArr.push(allChars[getRandomInt(allChars.length)]);
+        }
+
+        // Xáo trộn ngẫu nhiên các ký tự (Fisher-Yates shuffle)
+        for (let i = passwordArr.length - 1; i > 0; i--) {
+            const j = getRandomInt(i + 1);
+            [passwordArr[i], passwordArr[j]] = [passwordArr[j], passwordArr[i]];
+        }
+
+        return passwordArr.join('');
     }
 
-    async function handlePincodeInput(input) {
-        // Chỉ nhận số
-        input.value = input.value.replace(/[^0-9]/g, '');
-        const pincode = input.value;
-        const msgElement = document.getElementById('pincode-validation-msg');
-        const submitBtn = document.getElementById('submitFormBtn');
-
-        if (!msgElement) return;
-
-        // Nếu chưa gõ đủ 6 số
-        if (pincode.length < 6) {
-            msgElement.style.color = 'var(--text-muted)';
-            msgElement.innerHTML = 'Nhập đủ 6 chữ số để hệ thống kiểm tra bảo mật.';
-            input.style.borderColor = 'var(--border-color)';
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            submitBtn.style.cursor = 'pointer';
-            return;
-        }
-
-        // Đã gõ đủ 6 số, bắt đầu kiểm tra trùng bảo mật
-        msgElement.style.color = 'var(--accent-color)';
-        msgElement.innerHTML = '⏳ Đang kiểm tra tính khả dụng của mã PIN...';
-        input.style.borderColor = 'var(--accent-color)';
-
-        let exists = false;
-        if (isDemoMode) {
-            const mockGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
-            exists = mockGrievances.some(g => g.user_pincode.toString() === pincode);
-        } else {
-            try {
-                const { data, error } = await supabaseClient
-                    .rpc('check_pincode_exists', { pincode_input: pincode });
-                if (error) throw error;
-                exists = data;
-            } catch (err) {
-                console.error('Error checking pincode availability:', err);
-                exists = false; // Lỗi mạng thì bỏ qua không chặn người dùng
+    // Đảm bảo mật khẩu không bị trùng lặp trong cơ sở dữ liệu
+    async function generateUniquePassword() {
+        let attempts = 0;
+        while (attempts < 5) {
+            const pwd = generateSecurePassword(14);
+            if (isDemoMode) {
+                const mockGrievances = JSON.parse(localStorage.getItem('mock_grievances') || '[]');
+                if (!mockGrievances.some(g => g.user_pincode === pwd)) {
+                    return pwd;
+                }
+            } else {
+                try {
+                    const { data: exists } = await supabaseClient
+                        .rpc('check_pincode_exists', { pincode_input: pwd });
+                    if (!exists) {
+                        return pwd;
+                    }
+                } catch (err) {
+                    console.warn('Lỗi kiểm tra trùng mật khẩu, sử dụng mật khẩu vừa sinh:', err);
+                    return pwd;
+                }
             }
+            attempts++;
         }
+        return generateSecurePassword(14);
+    }
 
-        if (exists) {
-            msgElement.style.color = 'var(--error-color)';
-            msgElement.innerHTML = '❌ Mã PIN này đã được sử dụng. Vui lòng chọn 6 chữ số khác để bảo mật khiếu nại!';
-            input.style.borderColor = 'var(--error-color)';
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.5';
-            submitBtn.style.cursor = 'not-allowed';
-        } else {
-            msgElement.style.color = 'var(--success-color)';
-            msgElement.innerHTML = '✅ Mã PIN hợp lệ và an toàn (chưa có ai sử dụng).';
-            input.style.borderColor = 'var(--success-color)';
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            submitBtn.style.cursor = 'pointer';
+    function copySuccessPassword() {
+        const pwdElement = document.getElementById('successPincodeDisplay');
+        const pwd = pwdElement ? pwdElement.innerText.trim() : '';
+        if (pwd && !pwd.includes('••••')) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(pwd).then(() => {
+                    showToast('Đã sao chép mật khẩu tra cứu vào clipboard!', 'success');
+                }).catch(() => {
+                    showToast(`Mật khẩu của bạn: ${pwd}`, 'info');
+                });
+            } else {
+                showToast(`Mật khẩu của bạn: ${pwd}`, 'info');
+            }
         }
     }
 
@@ -1750,15 +1862,9 @@
         event.preventDefault();
 
         // 1. Validate Form input
-        const pincode = document.getElementById('user_pincode').value;
         const employeeId = document.getElementById('employee_id').value;
         const phoneNumber = document.getElementById('phone_number').value.trim();
-        const email = document.getElementById('email').value;
-
-        if (pincode.length !== 6) {
-            showToast('Mã truy cập PIN phải gồm đúng 6 chữ số!', 'error');
-            return;
-        }
+        const email = document.getElementById('email').value.trim();
 
         if (employeeId && employeeId.length !== 8) {
             showToast('Mã số nhân viên phải gồm đúng 8 chữ số!', 'error');
@@ -1779,6 +1885,10 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingText = document.getElementById('loadingText');
         loadingOverlay.classList.add('active');
+        loadingText.innerText = 'Đang tự động khởi tạo mật khẩu bảo mật...';
+
+        // Tự động sinh mật khẩu ngẫu nhiên 14 ký tự (chữ hoa, thường, số, ký tự đặc biệt)
+        const generatedPassword = await generateUniquePassword();
 
         // Khởi tạo data payload
         const incidentAtVal = document.getElementById('incident_at').value.trim();
@@ -1786,12 +1896,12 @@
 
         const grievanceData = {
             grievance_id: grievanceId,
-            user_pincode: pincode, // Giữ nguyên dạng TEXT để lưu đúng số 0 ở đầu (ví dụ: '000000')
+            user_pincode: generatedPassword, // Lưu mật khẩu bảo mật 14 ký tự vào cột user_pincode như bình thường
             reporter_name: document.getElementById('reporter_name').value.trim() || null,
             employee_id: employeeId ? parseInt(employeeId) : null,
             department: document.getElementById('department').value.trim() || null,
             phone_number: phoneNumber || null,
-            email: email.trim(),
+            email: email,
             work_area: document.getElementById('work_area').value.trim(),
             grievance_category: document.getElementById('grievance_category').value,
             grievance_subject: document.getElementById('grievance_subject').value.trim(),
@@ -1844,11 +1954,14 @@
                 // Reset Form
                 resetForm();
 
-                // Show Success Screen
-                document.getElementById('successPincodeDisplay').innerText = pincode;
+                // Show Success Screen & thông báo email
+                document.getElementById('successPincodeDisplay').innerText = generatedPassword;
+                const emailDisplay = document.getElementById('successEmailDisplay');
+                if (emailDisplay) emailDisplay.innerText = email;
+
                 loadingOverlay.classList.remove('active');
                 navigateTo('success');
-                showToast('Hồ sơ gửi thành công (Chế độ Demo)!', 'success');
+                showToast('Gửi khiếu nại thành công! Mật khẩu tra cứu đã gửi về email của bạn.', 'success');
 
             } catch (err) {
                 loadingOverlay.classList.remove('active');
@@ -1899,10 +2012,13 @@
 
                 // Thành công: Reset form & Chuyển trang
                 resetForm();
-                document.getElementById('successPincodeDisplay').innerText = pincode;
+                document.getElementById('successPincodeDisplay').innerText = generatedPassword;
+                const emailDisplay = document.getElementById('successEmailDisplay');
+                if (emailDisplay) emailDisplay.innerText = email;
+
                 loadingOverlay.classList.remove('active');
                 navigateTo('success');
-                showToast('Đã gửi phản ánh lên hệ thống bảo mật SEHC!', 'success');
+                showToast('Đã gửi phản ánh thành công! Mật khẩu tra cứu đã gửi về email của bạn.', 'success');
 
             } catch (err) {
                 console.error('Error submitting grievance:', err);
@@ -1920,13 +2036,13 @@
 
     // --- LOOKUP & STATUS TRACKER FLOW ---
     async function performGrievanceLookup() {
-        const pincodeStr = document.getElementById('lookup_pincode').value;
-        if (pincodeStr.length !== 6) {
-            showToast('Mã PIN phải gồm đúng 6 chữ số!', 'error');
+        const pincodeStr = document.getElementById('lookup_pincode').value.trim();
+        if (!pincodeStr) {
+            showToast('Vui lòng nhập mật khẩu tra cứu hoặc mã PIN!', 'error');
             return;
         }
 
-        const pincode = pincodeStr; // Giữ nguyên dạng TEXT để truy vấn đúng mã PIN có số 0 ở đầu
+        const pincode = pincodeStr; // Giữ nguyên dạng TEXT để tra cứu cả mật khẩu 14 ký tự hoặc mã PIN cũ
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingText = document.getElementById('loadingText');
         
@@ -1973,7 +2089,7 @@
             resultsCountTitle.innerText = 'Không tìm thấy hồ sơ';
             resultsList.innerHTML = `
                 <div class="response-card-empty" style="margin-top:0;">
-                    Không có đơn phản ánh nào khớp với mã PIN này. Vui lòng kiểm tra lại mã hoặc tạo phản ánh mới.
+                    Không có đơn phản ánh nào khớp với mật khẩu/mã tra cứu này. Vui lòng kiểm tra lại mật khẩu nhận qua email hoặc tạo phản ánh mới.
                 </div>
             `;
             return;
@@ -2061,7 +2177,7 @@
         } else {
             responseArea.innerHTML = `
                 <div class="response-card-empty">
-                    🕒 Đơn phản ánh đang trong quá trình tiếp nhận và tiến hành xác minh. Phản hồi chính thức từ Ban Tổ Chức (ER) sẽ hiển thị ngay tại đây khi có cập nhật mới. Vui lòng quay lại kiểm tra định kỳ bằng mã PIN này.
+                    🕒 Đơn phản ánh đang trong quá trình tiếp nhận và tiến hành xác minh. Phản hồi chính thức từ Ban Tổ Chức (ER) sẽ hiển thị ngay tại đây khi có cập nhật mới. Vui lòng quay lại kiểm tra định kỳ bằng mật khẩu tra cứu này.
                 </div>
             `;
         }

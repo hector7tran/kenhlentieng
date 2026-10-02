@@ -1218,25 +1218,86 @@
 
 <!-- JAVASCRIPT SYSTEM -->
 <script>
-    // --- SUPABASE CONFIGURATION (HỖ TRỢ VERCEL REVERSE PROXY) ---
-    // Mạng nội bộ công ty chặn trực tiếp các API tên miền *.supabase.co.
-    // Hệ thống tự động phát hiện và định tuyến qua Vercel Reverse Proxy (/supabase) để máy tính công ty truy cập bình thường:
-    function getOptimalSupabaseUrl() {
+    // --- SUPABASE DUAL-ENDPOINT & RESILIENT CONNECTION CONFIGURATION ---
+    const DIRECT_SUPABASE_URL = 'https://wvfolaoukphocflrdqxj.supabase.co';
+    const PROXY_SUPABASE_URL = 'https://kenhlentieng.vercel.app/supabase';
+
+    function getOptimalSupabaseConfig() {
         if (typeof window !== 'undefined' && window.location) {
             const hostname = window.location.hostname;
-            // 1. Khi chạy trực tiếp trên Vercel (*.vercel.app hoặc domain riêng trên Vercel):
-            // Dùng đường dẫn proxy cùng origin (/supabase) -> Vượt qua tường lửa công ty và không bị chặn CORS
+            // Nếu đang chạy trên domain Vercel (*.vercel.app hoặc domain công ty trỏ Vercel)
             if (hostname.includes('vercel.app') || (window.location.protocol.startsWith('http') && hostname !== 'localhost' && hostname !== '127.0.0.1')) {
-                return window.location.origin + '/supabase';
+                return {
+                    url: window.location.origin + '/supabase',
+                    fallbackUrl: DIRECT_SUPABASE_URL
+                };
             }
         }
-        // 2. Khi chạy local hoặc mở file HTML trên máy tính công ty:
-        // Định tuyến qua proxy Vercel production để không bị tường lửa công ty chặn
-        return 'https://kenhlentieng.vercel.app/supabase';
+        // Khi mở file cục bộ (file:/// hoặc localhost), dùng trực tiếp Supabase để tương thích CORS
+        return {
+            url: DIRECT_SUPABASE_URL,
+            fallbackUrl: PROXY_SUPABASE_URL
+        };
     }
 
-    const supabaseUrl = getOptimalSupabaseUrl();
+    const { url: supabaseUrl, fallbackUrl: supabaseFallbackUrl } = getOptimalSupabaseConfig();
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2Zm9sYW91a3Bob2NmbHJkcXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MDg0OTQsImV4cCI6MjEwNTI4NDQ5NH0.aBMGvrAckYDbM2RpyksdN5sWjav-PhYdS2xichfnpNU';
+
+    function createSupabaseFetch() {
+        return async function customFetch(input, init = {}) {
+            const options = { ...init };
+
+            if (options.headers) {
+                if (typeof Headers !== 'undefined' && options.headers instanceof Headers) {
+                    const cleanHeaders = new Headers(options.headers);
+                    cleanHeaders.delete('x-client-info');
+                    cleanHeaders.delete('x-upsert');
+                    options.headers = cleanHeaders;
+                } else if (typeof options.headers === 'object') {
+                    options.headers = { ...options.headers };
+                    delete options.headers['x-client-info'];
+                    delete options.headers['X-Client-Info'];
+                    delete options.headers['x-upsert'];
+                    delete options.headers['X-Upsert'];
+                }
+            }
+
+            try {
+                const response = await fetch(input, options);
+                if (!response.ok && (response.status === 403 || response.status === 404 || response.status >= 502)) {
+                    const urlStr = typeof input === 'string' ? input : (input.url || input.toString());
+                    let altUrl = null;
+                    if (urlStr.includes('supabase.co')) {
+                        altUrl = urlStr.replace(DIRECT_SUPABASE_URL, PROXY_SUPABASE_URL);
+                    } else if (urlStr.includes('/supabase')) {
+                        altUrl = urlStr.replace(PROXY_SUPABASE_URL, DIRECT_SUPABASE_URL).replace('/supabase', '');
+                    }
+                    if (altUrl && altUrl !== urlStr) {
+                        console.warn(`[Admin Supabase Fallback] Chuyển đổi endpoint sang: ${altUrl}`);
+                        return await fetch(altUrl, options);
+                    }
+                }
+                return response;
+            } catch (networkError) {
+                const urlStr = typeof input === 'string' ? input : (input.url || input.toString());
+                let altUrl = null;
+                if (urlStr.includes('supabase.co')) {
+                    altUrl = urlStr.replace(DIRECT_SUPABASE_URL, PROXY_SUPABASE_URL);
+                } else if (urlStr.includes('/supabase')) {
+                    altUrl = urlStr.replace(PROXY_SUPABASE_URL, DIRECT_SUPABASE_URL).replace('/supabase', '');
+                }
+                if (altUrl && altUrl !== urlStr) {
+                    console.warn(`[Admin Network Error Fallback] Thử lại với endpoint thay thế: ${altUrl}`);
+                    try {
+                        return await fetch(altUrl, options);
+                    } catch (altErr) {
+                        throw networkError;
+                    }
+                }
+                throw networkError;
+            }
+        };
+    }
 
     let supabaseClient = null;
     let isDemoMode = true;
@@ -1257,11 +1318,14 @@
 
         if (typeof supabase !== 'undefined') {
             try {
-                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey, {
+                    auth: { persistSession: false },
+                    global: { fetch: createSupabaseFetch() }
+                });
                 isDemoMode = false;
                 demoBanner.style.display = 'none';
                 demoBanner.innerHTML = '<span>⚠️ Chế độ Demo (Chưa kết nối Supabase) - Toàn bộ dữ liệu hiển thị là dữ liệu mẫu lưu tại máy của bạn.</span>';
-                console.log("Supabase Client initialized successfully.");
+                console.log("Supabase Client initialized successfully (Mode: " + (supabaseUrl.includes('supabase.co') ? 'Direct' : 'Proxy') + ").");
                 return true;
             } catch (err) {
                 console.error("Error loading Supabase Client:", err);
@@ -1275,7 +1339,10 @@
             try {
                 await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
                 if (typeof supabase !== 'undefined') {
-                    supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                    supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey, {
+                        auth: { persistSession: false },
+                        global: { fetch: createSupabaseFetch() }
+                    });
                     isDemoMode = false;
                     demoBanner.style.display = 'none';
                     demoBanner.innerHTML = '<span>⚠️ Chế độ Demo (Chưa kết nối Supabase) - Toàn bộ dữ liệu hiển thị là dữ liệu mẫu lưu tại máy của bạn.</span>';
